@@ -3,30 +3,35 @@ body {
   font-family: "Roboto", sans-serif;
   background-color: #0e0e0e;
   color: #eee;
+  font-size: 0.9rem;
 }
 
 /* Override Bootstrap's main container background */
 main.container-fluid {
-  background-color: #0e0e0e; /* Same as body background */
+  background-color: #0e0e0e;
+  padding: 0.5rem;
 }
 
 /* Card Styling */
 .card {
-  border-radius: 10px;
+  border-radius: 8px;
   border: none;
-  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 3px 6px rgba(255, 255, 255, 0.1); 
   background-color: #181818;
+  padding: 0.75rem; 
 }
 
 .card-title {
   font-weight: 500;
   color: #eee;
+  font-size: 1rem;
 }
 
 /* Form Styling */
 .form-label {
   font-weight: 500;
   color: #eee;
+  font-size: 0.9rem;
 }
 
 /* Override Bootstrap form-control for dark mode */
@@ -34,12 +39,14 @@ main.container-fluid {
   background-color: #212529;
   border-color: #495057;
   color: #eee;
+  padding: 0.5rem;
+  font-size: 0.9rem; 
 }
 
 .form-control:focus {
   background-color: #343a40;
   border-color: #80bdff;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); /* Bootstrap primary color with alpha */
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
   color: #eee;
 }
 
@@ -47,11 +54,14 @@ main.container-fluid {
   background-color: #212529;
   border-color: #495057;
   color: #eee;
+  padding: 0.5rem;
+  font-size: 0.9rem;
 }
 
+/* Bootstrap primary color with alpha */
 .form-select:focus {
   border-color: #80bdff;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); /* Bootstrap primary color with alpha */
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); 
 }
 
 /* Table Styling */
