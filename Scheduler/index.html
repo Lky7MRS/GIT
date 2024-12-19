@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Timezone Lesson Scheduler</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "moment": "https://cdn.skypack.dev/moment@2.29.4",
+                "moment-timezone": "https://cdn.skypack.dev/moment-timezone@0.5.43",
+                "firebase/app": "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js",
+                "firebase/database": "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"
+            }
+        }
+    </script>
+</head>
+<body class>
+    <main class="container-fluid py-4">
+        <div class="row">
+            <aside class="col-md-4 col-lg-3 mb-4">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body">
+                        <h2 class="card-title h4 mb-4 text-center">
+                            <i class="fas fa-calendar-check me-2"></i>
+                            Set Your Availability
+                        </h2>
+                        <form id="availabilityForm">
+                            <div class="mb-3">
+                                <label for="userName" class="form-label"><i class="fas fa-user me-2"></i>Name:</label>
+                                <input type="text" id="userName" name="userName" class="form-control" placeholder="Enter your name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="timeZone" class="form-label"><i class="fas fa-globe me-2"></i>Select Time Zone:</label>
+                                <select id="timeZone" name="timeZone" class="form-select"></select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="timeFormat" class="form-label"><i class="fas fa-clock me-2"></i>Select Time Format:</label>
+                                <select id="timeFormat" name="timeFormat" class="form-select">
+                                    <option value="24h">24-Hour Clock</option>
+                                    <option value="12h">12-Hour Clock</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="granularity" class="form-label"><i class="fas fa-sliders-h me-2"></i>Select Granularity:</label>
+                                <select id="granularity" name="granularity" class="form-select">
+                                    <option value="60" selected>1 hour</option>
+                                </select>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="startDate" class="form-label"><i class="fas fa-calendar-alt me-2"></i>Start Date:</label>
+                                    <input type="date" id="startDate" name="startDate" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="endDate" class="form-label"><i class="fas fa-calendar-alt me-2"></i>End Date:</label>
+                                    <input type="date" id="endDate" name="endDate" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="startTime" class="form-label"><i class="fas fa-hourglass-start me-2"></i>Select Start Time:</label>
+                                    <select id="startTime" name="startTime" class="form-select"></select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="endTime" class="form-label"><i class="fas fa-hourglass-end me-2"></i>Select End Time:</label>
+                                    <select id="endTime" name="endTime" class="form-select"></select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="note" class="form-label"><i class="fas fa-sticky-note me-2"></i>Note (optional):</label>
+                                <textarea id="note" name="note" class="form-control" placeholder="Add a note" rows="3"></textarea>
+                            </div>
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Submit</button>
+                                <button type="button" id="resetButton" class="btn btn-secondary"><i class="fas fa-undo me-2"></i>Reset</button>
+                                <button type="button" id="exportCSVButton" class="btn btn-secondary"><i class="fas fa-file-csv me-2"></i>Export to CSV</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="col-md-8 col-lg-9">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body">
+                        <h2 class="card-title h4 mb-4 text-center">
+                            <i class="fas fa-table me-2"></i>
+                            Your Schedule
+                        </h2>
+                        <div class="table-responsive">
+                            <table id="availabilityTable" class="table table-hover table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th><i class="fas fa-clock"></i> Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
