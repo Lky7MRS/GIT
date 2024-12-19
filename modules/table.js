@@ -124,17 +124,22 @@ export function updateStartEndClasses(tableBody) {
 
     // Iterate over each column
     for (let colIndex = 1; colIndex < numColumns; colIndex++) {
-        const selectedCells = [];
+        let selectedCells = [];
 
         // Collect selected cells in the current column
         Array.from(tableBody.rows).forEach(row => {
             const cell = row.cells[colIndex];
             if (cell.classList.contains('selected')) {
                 selectedCells.push(cell);
+            } else if (selectedCells.length > 0) {
+                // Handle the end of a contiguous block
+                selectedCells[0].classList.add('start-time');
+                selectedCells[selectedCells.length - 1].classList.add('end-time');
+                selectedCells = [];
             }
         });
 
-        // Add start-time and end-time classes to the first and last selected cells in the column
+        // Handle the last contiguous block if it exists
         if (selectedCells.length > 0) {
             selectedCells[0].classList.add('start-time');
             selectedCells[selectedCells.length - 1].classList.add('end-time');
