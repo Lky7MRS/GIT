@@ -1,38 +1,39 @@
-import axios from "axios";
-import moment from "moment";
-import { convertTo24HourFormat } from "./utils.js";
+import moment from 'moment';
+import axios from 'axios';
 
 const webhookURL =
   ""
 
- /**
- * Sends a message to the Discord webhook.
+/**
+ * Sends a notification to a Discord webhook.
  * @param {string} userName - The user's name.
  * @param {string} userNote - The user's note.
  * @param {string} timeZone - The user's time zone.
- * @param {string} startDate - The start date.
- * @param {string} endDate - The end date.
- * @param {Array} selectedSlots - The selected slots.
- * @param {string} timeFormat - The time format ('12h' or '24h').
+ * @param {string} startDate - The user's start time selection.
+ * @param {string} endDate - The user's end time selection.
+ * @param {Array} sessionSelectedSlots - The selected slots.
  */
-export async function sendDiscordNotification(
-  userName,
-  userNote,
-  timeZone,
-  startDate,
-  endDate,
-  selectedSlots,
-  timeFormat
-) {
+
+export async function sendDiscordNotification(userName, userNote, timeZone, startDate, endDate, sessionSelectedSlots) {
+  console.log('sessionSelectedSlots:', sessionSelectedSlots);
+  console.log('Type of sessionSelectedSlots:', typeof sessionSelectedSlots);
+
+  if (!Array.isArray(sessionSelectedSlots)) {
+    console.error('sessionSelectedSlots is not an array:', sessionSelectedSlots);
+    return;
+  }
+
   const days = {};
 
-  // Group slots by date
-  selectedSlots.forEach(slot => {
-    const date = moment(slot.date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+  sessionSelectedSlots.forEach(slot => {
+    const dateTime = moment.unix(slot.timestamp).tz(timeZone);
+    const date = dateTime.format('YYYY-MM-DD');
+    const time = dateTime.format('HH:mm');
+
     if (!days[date]) {
       days[date] = [];
     }
-    days[date].push(slot.time);
+    days[date].push({ timestamp: slot.timestamp, time });
   });
 
   // Sort dates
@@ -41,22 +42,17 @@ export async function sendDiscordNotification(
   // Format the message
   const formattedSlots = sortedDates
     .map((date) => {
-      const times = days[date];
+      const times = days[date].sort((a, b) => a.timestamp - b.timestamp);
       const timeBlocks = [];
-      let startTime = times[0];
-      let endTime = times[0];
+      let startTime = times[0].time;
+      let endTime = times[0].time;
 
       for (let i = 1; i < times.length; i++) {
-        const currentTime = times[i];
-        const previousTime = times[i - 1];
+        const currentTime = times[i].time;
+        const previousTime = times[i - 1].time;
 
-        // Check if the current time is consecutive to the previous time
-        const currentTimeInMinutes =
-          parseInt(currentTime.split(":")[0]) * 60 +
-          parseInt(currentTime.split(":")[1]);
-        const previousTimeInMinutes =
-          parseInt(previousTime.split(":")[0]) * 60 +
-          parseInt(previousTime.split(":")[1]);
+        const currentTimeInMinutes = convertTimeToMinutes(currentTime);
+        const previousTimeInMinutes = convertTimeToMinutes(previousTime);
 
         if (currentTimeInMinutes === previousTimeInMinutes + 60) {
           endTime = currentTime;
@@ -68,46 +64,50 @@ export async function sendDiscordNotification(
       }
       timeBlocks.push({ start: startTime, end: endTime });
 
-      const formattedTimeBlocks = timeBlocks
-        .map((block, index) => {
-          const start = timeFormat === "12h" ? convertTo24HourFormat(block.start) : block.start;
-          const end = timeFormat === "12h" ? convertTo24HourFormat(block.end) : block.end;
-          const startTimestamp = Math.floor(
-            new Date(`${date}T${start}:00`).getTime() / 1000
-          );
-          const endTimestamp = Math.floor(
-            new Date(`${date}T${end}:00`).getTime() / 1000 + 59 * 60
-          );
-          if (index === 0) {
-            return `<t:${startTimestamp}:f> - <t:${endTimestamp}:t>`;
-          } else {
-            return `<t:${startTimestamp}:t> - <t:${endTimestamp}:t>`;
-          }
-        })
-        .join(", ");
+      return formatTimeBlocks(timeBlocks, date);
+    }).join("\n");
 
-      return formattedTimeBlocks;
-    })
-    .join("\n");
+  const startTimestamp = moment.unix(sessionSelectedSlots[0].timestamp).unix();
+  const endTimestamp = moment.unix(sessionSelectedSlots[sessionSelectedSlots.length - 1].timestamp).unix();
+  const startDateTimestamp = moment(startDate).unix();
+  const endDateTimestamp = moment(endDate).unix();
 
   const message = `
-    **Name:** ${userName}
-    **Note:** ${userNote}
-    **Time Zone:** ${timeZone}
-    **Start Date:** <t:${Math.floor(new Date(startDate).getTime() / 1000)}:D>
-    **End Date:** <t:${Math.floor(new Date(endDate).getTime() / 1000)}:D>
-    **Availability:**
-    ${formattedSlots}
-    `;
+**Name:** ${userName}
+**Note:** ${userNote}
+**Time Zone:** ${timeZone}
+**For Timeframe:** <t:${startDateTimestamp}:D> - <t:${endDateTimestamp}:D>
+**First Available:** <t:${startTimestamp}:D>
+**Last Available:** <t:${endTimestamp}:D>
+**Availability:**
+${formattedSlots}
+`;
 
   console.log("Generated message:", message); // Debugging line
 
   try {
     const response = await axios.post(webhookURL, {
-      content: message,
+      content: message
     });
     console.log("Message sent successfully:", response.data);
   } catch (error) {
     console.error("Error sending message:", error);
   }
+}
+
+// Helper function to convert time to minutes
+function convertTimeToMinutes(time) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+// Helper function to format time blocks
+function formatTimeBlocks(timeBlocks, date) {
+  return timeBlocks.map((block, index) => {
+    const startTimestamp = moment(`${date} ${block.start}`, 'YYYY-MM-DD HH:mm').unix();
+    const endTimestamp = moment(`${date} ${block.end}`, 'YYYY-MM-DD HH:mm').unix();
+    return index === 0
+      ? `<t:${startTimestamp}:f> - <t:${endTimestamp}:t>`
+      : `<t:${startTimestamp}:t> - <t:${endTimestamp}:t>`;
+  }).join(", ");
 }
