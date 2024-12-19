@@ -1,6 +1,5 @@
 import moment from "moment";
 import "moment-timezone";
-
 import {
     populateTimeDropdowns,
     convertTo12HourFormat,
