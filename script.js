@@ -48,7 +48,7 @@ tableBody.addEventListener('mousedown', (e) => {
         isSelecting = !clickedSlot.classList.contains('selected');
 
         clickedSlot.classList.toggle('selected', isSelecting);
-        updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots); // Pass sessionSelectedSlots
+        updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
     }
 });
 
@@ -58,7 +58,7 @@ tableBody.addEventListener('mousemove', (e) => {
         if (currentSlot !== startSlot) {
             currentSlot.classList.toggle('selected', isSelecting);
             currentSlot.classList.add('hover');
-            updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots); // Pass sessionSelectedSlots
+            updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
         }
     }
 });
@@ -90,30 +90,6 @@ tableBody.addEventListener('mouseout', (e) => {
     if (e.target.classList.contains('time-slot')) {
         e.target.classList.remove('hover');
     }
-});
-
-// Export Data
-exportCSVButton.addEventListener('click', () => {
-    const savedData = JSON.parse(localStorage.getItem('userAvailability'));
-    if (!savedData) return alert('No data to export.');
-
-    const csvContent = [
-        ['Name', 'Time Zone', 'Start Date', 'End Date', 'Note', 'Selected Slots'],
-        [
-            savedData.name,
-            savedData.timeZone,
-            savedData.startDate,
-            savedData.endDate,
-            `"${savedData.note}"`,
-            savedData.selectedSlots.map(slot => `${slot.day} ${slot.time}`).join('; '),
-        ],
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'availability.csv';
-    link.click();
 });
 
 // ---------- Initialization Call ----------

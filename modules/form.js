@@ -1,6 +1,7 @@
 import { generateTimeSlots, reapplySessionSelectedSlots } from './table.js';
 import { populateTimeDropdowns, convertTo12HourFormat, convertTo24HourFormat, convertToUserTimeZone, convertTimesSessionStorage } from './utils.js';
 import { timeFormat, granularity, updateTimeFormat, updateGranularity, sessionSelectedSlots } from '../script.js';
+import { sendDiscordNotification } from './discordWebhook.js';
 import { saveDataToFirebase } from './storage.js';
 import moment from 'moment';
 
@@ -40,16 +41,13 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
             timeFormatSelect.value = formData.timeFormat;
             granularitySelect.value = formData.granularity;
 
-            // Populate time dropdowns before setting their values
             populateTimeDropdowns(startTimeSelect, endTimeSelect, formData.timeFormat, formData.granularity, formData.startTime, formData.endTime, startDateElement, endDateElement, formData.startDate, formData.endDate);
 
-            // Set the values after populating the dropdowns
             timeZoneSelect.value =  moment.tz.guess() || formData.timeZone;
             if (formData.sessionSelectedSlots) {
                 sessionStorage.setItem('sessionSelectedSlots', formData.sessionSelectedSlots);
             }
 
-            // Generate time slots and reapply selections
             generateTimeSlots(
                 tableBody,
                 tableHeader,
@@ -137,7 +135,7 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
         // Update session storage with converted times (rounded to nearest granularity)
         let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
         sessionSelectedSlots = sessionSelectedSlots.map(slot => ({
-            time: convertToUserTimeZone(slot.time, selectedTimeZone),
+            time: convertToUserTimeZone(slot.time, selectedTimeZone, timeFormat, granularity),
             day: slot.day
         }));
 
@@ -249,10 +247,48 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
         loadFormData();
     });
 
-    // Save Data to Firebase
+    // Save Data to Firebase and send Discord notification
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
+        saveFormData();
         let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
         await saveDataToFirebase(timeFormat, sessionSelectedSlots);
+
+        // Send Discord notification
+        const formData = JSON.parse(localStorage.getItem('formData'));
+        if (formData) {
+            await sendDiscordNotification(
+                formData.userName,
+                formData.userNote,
+                formData.timeZone,
+                formData.startDate,
+                formData.endDate,
+                JSON.parse(formData.sessionSelectedSlots)
+            );
+        }
+    });
+
+    // Export Data to CSV
+    exportCSVButton.addEventListener('click', () => {
+        const formData = JSON.parse(localStorage.getItem('formData'));
+        if (!formData) return alert('No data to export.');
+
+        const csvContent = [
+            ['Name', 'Time Zone', 'Start Date', 'End Date', 'Note', 'Selected Slots'],
+            [
+                formData.userName,
+                formData.timeZone,
+                formData.startDate,
+                formData.endDate,
+                `"${formData.userNote}"`,
+                JSON.parse(formData.sessionSelectedSlots).map(slot => `${slot.day} ${slot.time}`).join('; '),
+            ],
+        ].map(row => row.join(',')).join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'availability.csv';
+        link.click();
     });
 }

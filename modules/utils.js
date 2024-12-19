@@ -17,8 +17,6 @@ export function populateTimeDropdowns(startTimeSelect, endTimeSelect, timeFormat
 
     updateDropdown(startTimeSelect, selectedStartTime);
     updateDropdown(endTimeSelect, selectedEndTime);
-
-    // Set the selected start and end dates
     startDateElement.value = selectedStartDate;
     endDateElement.value = selectedEndDate;
 }
@@ -36,7 +34,6 @@ export function convertToUserTimeZone(time, userTimeZone, timeFormat, granularit
     const timeInUtc = moment.utc(time, timeFormatToUse);
     const timeInUserTimeZone = timeInUtc.tz(userTimeZone);
 
-    // Round to the nearest specified granularity
     const roundedTime = roundToNearestGranularity(timeInUserTimeZone, granularity);
     return roundedTime.format(timeFormatToUse);
 }
