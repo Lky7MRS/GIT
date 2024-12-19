@@ -68,13 +68,6 @@ export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, st
         </tr>`;
     }).join('');
 
-    // Add event listeners for cell selection
-    Array.from(tableBody.querySelectorAll('.time-slot')).forEach(cell => {
-        cell.addEventListener('click', () => {
-            updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
-        });
-    });
-
     reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start);
 }
 
@@ -106,6 +99,7 @@ export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelec
             }
         });
     });
+    updateStartEndClasses(tableBody);
 }
 
 export function updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots) {
@@ -116,4 +110,34 @@ export function updateSessionSelectedSlots(tableBody, tableHeader, sessionSelect
     });
 
     sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(selectedSlots));
+    updateStartEndClasses(tableBody);
+}
+
+export function updateStartEndClasses(tableBody) {
+    // Remove existing start-time and end-time classes
+    Array.from(tableBody.querySelectorAll('.time-slot')).forEach(cell => {
+        cell.classList.remove('start-time', 'end-time');
+    });
+
+    // Get the number of columns
+    const numColumns = tableBody.rows[0].cells.length;
+
+    // Iterate over each column
+    for (let colIndex = 1; colIndex < numColumns; colIndex++) {
+        const selectedCells = [];
+
+        // Collect selected cells in the current column
+        Array.from(tableBody.rows).forEach(row => {
+            const cell = row.cells[colIndex];
+            if (cell.classList.contains('selected')) {
+                selectedCells.push(cell);
+            }
+        });
+
+        // Add start-time and end-time classes to the first and last selected cells in the column
+        if (selectedCells.length > 0) {
+            selectedCells[0].classList.add('start-time');
+            selectedCells[selectedCells.length - 1].classList.add('end-time');
+        }
+    }
 }

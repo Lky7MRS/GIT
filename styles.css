@@ -112,6 +112,14 @@ table {
   color: white;
 }
 
+.time-slot.start-time {
+  border-top: 5px solid #00aa30;
+}
+
+.time-slot.end-time {
+  border-bottom: 5px solid #dc3545;
+}
+
 .time-slot.hover {
   background-color: #3a3a3a;
 }
