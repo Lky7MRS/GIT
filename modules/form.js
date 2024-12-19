@@ -136,7 +136,7 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
         let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
         sessionSelectedSlots = sessionSelectedSlots.map(slot => ({
             time: convertToUserTimeZone(slot.time, selectedTimeZone, timeFormat, granularity),
-            day: slot.day
+            date: slot.date
         }));
 
         // Update session storage with converted times
@@ -156,6 +156,9 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
             sessionSelectedSlots,
             reapplySessionSelectedSlots
         );
+
+        // Reapply session selected slots
+        reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDateElement.value, 'YYYY-MM-DD'));
     });
 
     // Event listener for granularity change
@@ -277,7 +280,7 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
         saveFormData();
         let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
         await saveDataToFirebase(timeFormat, sessionSelectedSlots);
-    
+
         // Send Discord notification
         const formData = JSON.parse(localStorage.getItem('formData'));
         if (formData) {
