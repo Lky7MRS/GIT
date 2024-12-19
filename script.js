@@ -1,19 +1,10 @@
-import moment from "moment";
 import "moment-timezone";
 import {
-    populateTimeDropdowns,
-    convertTo12HourFormat,
-    convertTo24HourFormat,
-    convertToUserTimeZone,
-    roundToNearestGranularity
-} from "./modules/utils.js";
-import {
-    generateTimeSlots,
     reapplySessionSelectedSlots,
     updateSessionSelectedSlots
 } from "./modules/table.js";
 import { setupForm } from "./modules/form.js";
-import { loadDataFromLocalStorage } from "./modules/storage.js";
+import { populateTimeDropdowns } from "./modules/utils.js";
 
 // ---------- Initialization ----------
 const form = document.getElementById('availabilityForm');
@@ -28,19 +19,17 @@ const granularitySelect = document.getElementById('granularity');
 const exportCSVButton = document.getElementById('exportCSVButton');
 
 // Default settings
-export let sessionSelectedSlots = []; // Now exported
+export let sessionSelectedSlots = [];
 export let timeFormat = '24h';
 export let granularity = 60;
 
-// Function to update timeFormat
+// Update timeFormat
 export function updateTimeFormat(newTimeFormat) {
     timeFormat = newTimeFormat;
-    console.log("Global timeFormat updated:", timeFormat);
 }
 
 export function updateGranularity(newGranularity) {
     granularity = newGranularity;
-    console.log("Global granularity updated:", granularity);
 }
 
 // ---------- Event Listeners ----------
@@ -127,7 +116,6 @@ exportCSVButton.addEventListener('click', () => {
 });
 
 // ---------- Initialization Call ----------
-
 // Call setupForm to initialize form-related functionalities
 setupForm(
     form,
@@ -143,17 +131,4 @@ setupForm(
     resetButton,
     reapplySessionSelectedSlots,
     updateSessionSelectedSlots,
-);
-
-// Load data from localStorage and initialize the table
-loadDataFromLocalStorage(
-    timeZoneSelect,
-    timeFormatSelect,
-    granularitySelect,
-    startTimeSelect,
-    endTimeSelect,
-    tableBody,
-    tableHeader,
-    sessionSelectedSlots,
-    reapplySessionSelectedSlots
 );

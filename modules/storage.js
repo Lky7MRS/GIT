@@ -1,41 +1,25 @@
 // modules/storage.js
-import moment from 'moment';
-import { convertToUserTimeZone } from './utils.js';
-import { generateTimeSlots, reapplySessionSelectedSlots, updateSessionSelectedSlots } from './table.js';
-import { populateTimeDropdowns } from './utils.js';
-import { timeFormat, granularity } from '../script.js';
-import { db } from './firebase.js'; // Import only 'db'
-import { ref, get } from 'firebase/database';
 
-export async function loadDataFromLocalStorage(
+import { db } from './firebase.js'; // Import only 'db'
+import { ref, get, set } from 'firebase/database';
+
+export async function loadDataFromFirebase(
+    userId,
     timeZoneSelect,
     timeFormatSelect,
     granularitySelect,
     startTimeSelect,
     endTimeSelect,
+    startDateElement,
+    endDateElement,
     tableBody,
-    tableHeader
+    tableHeader,
+    sessionSelectedSlots,
+    reapplySessionSelectedSlots
 ) {
-    // Populate time zones
-    moment.tz.names().forEach(zone => {
-        const option = document.createElement('option');
-        option.value = zone;
-        option.text = zone;
-        timeZoneSelect.appendChild(option);
-    });
-
     try {
-        // Use a unique identifier for anonymous users
-        let userId = localStorage.getItem('userId');
-        if (!userId) {
-            userId = generateUniqueId();
-            localStorage.setItem('userId', userId);
-        }
-
         const availabilityRef = ref(db, 'availabilities/' + userId);
         const snapshot = await get(availabilityRef);
-
-        let sessionSelectedSlots = [];
 
         if (snapshot.exists()) {
             const savedData = snapshot.val();
@@ -45,8 +29,8 @@ export async function loadDataFromLocalStorage(
             document.getElementById('note').value = data.note;
 
             // Format dates correctly before setting values
-            document.getElementById('startDate').value = moment(data.startDate, 'YYYY-MM-DD').format('YYYY-MM-DD');
-            document.getElementById('endDate').value = moment(data.endDate, 'YYYY-MM-DD').format('YYYY-MM-DD');
+            startDateElement.value = moment(data.startDate, 'YYYY-MM-DD').format('YYYY-MM-DD');
+            endDateElement.value = moment(data.endDate, 'YYYY-MM-DD').format('YYYY-MM-DD');
 
             // Set time format and populate dropdowns
             timeFormatSelect.value = data.timeFormat;
@@ -91,28 +75,26 @@ export async function loadDataFromLocalStorage(
             updateSessionSelectedSlots(tableBody, tableHeader);
 
         } else {
-            const today = moment().format('YYYY-MM-DD');
-            const weeksFromToday = moment().add(1, 'week').format('YYYY-MM-DD');
-
-            // Initialize for new users
-            populateTimeDropdowns(startTimeSelect, endTimeSelect, '24h', 60);
-            generateTimeSlots(
-                tableBody,
-                tableHeader,
-                today,
-                weeksFromToday,
-                startTimeSelect,
-                endTimeSelect,
-                '24h',
-                60,
-                sessionSelectedSlots,
-                reapplySessionSelectedSlots
-            );
-            timeZoneSelect.value = moment.tz.guess() || "Europe/Berlin";
+            console.log("No data available for the user.");
         }
     } catch (error) {
         console.error("Error fetching data from Firebase:", error);
         alert("An error occurred while loading your availability.");
+    }
+}
+
+export async function saveDataToFirebase(timeFormat, sessionSelectedSlots) {
+    const selectedSlots24h = sessionSelectedSlots.map(slot => ({
+        time: timeFormat === '12h' ? convertTo24HourFormat(slot.time) : slot.time,
+        day: slot.day
+    }));
+
+    try {
+        const dbRef = ref(db, 'selectedSlots');
+        await set(dbRef, selectedSlots24h);
+        console.log('Data saved to Firebase:', selectedSlots24h);
+    } catch (error) {
+        console.error('Error saving data to Firebase:', error);
     }
 }
 

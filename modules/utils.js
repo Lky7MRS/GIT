@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-export function populateTimeDropdowns(startTimeSelect, endTimeSelect, timeFormat, granularity) {
+export function populateTimeDropdowns(startTimeSelect, endTimeSelect, timeFormat, granularity, selectedStartTime, selectedEndTime, startDateElement, endDateElement, selectedStartDate, selectedEndDate) {
     const times = [];
     for (let hour = 0; hour < 24; hour++) {
         for (let minute = 0; minute < 60; minute += granularity) {
@@ -9,14 +9,18 @@ export function populateTimeDropdowns(startTimeSelect, endTimeSelect, timeFormat
         }
     }
 
-    const updateDropdown = (dropdown) => {
+    const updateDropdown = (dropdown, selectedTime) => {
         dropdown.innerHTML = times
-            .map(time => `<option value="${time}">${time}</option>`)
+            .map(time => `<option value="${time}" ${time === selectedTime ? 'selected' : ''}>${time}</option>`)
             .join('');
     };
 
-    updateDropdown(startTimeSelect);
-    updateDropdown(endTimeSelect);
+    updateDropdown(startTimeSelect, selectedStartTime);
+    updateDropdown(endTimeSelect, selectedEndTime);
+
+    // Set the selected start and end dates
+    startDateElement.value = selectedStartDate;
+    endDateElement.value = selectedEndDate;
 }
 
 export function convertTo12HourFormat(time24h) {
@@ -41,4 +45,16 @@ export function roundToNearestGranularity(momentObj, granularityMinutes) {
     const minutes = momentObj.minutes();
     const roundedMinutes = Math.round(minutes / granularityMinutes) * granularityMinutes;
     return momentObj.clone().minutes(roundedMinutes).seconds(0);
+}
+
+export function convertTimesSessionStorage(newTimeFormat) {
+    let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
+    sessionSelectedSlots = sessionSelectedSlots.map(slot => {
+        const { time, day } = slot;
+        const convertedTime = newTimeFormat === '12h'
+            ? convertTo12HourFormat(time)
+            : convertTo24HourFormat(time);
+        return { time: convertedTime, day };
+    });
+    return sessionSelectedSlots;
 }

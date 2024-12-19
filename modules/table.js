@@ -1,10 +1,4 @@
 import moment from 'moment';
-import {
-    convertTo12HourFormat,
-    convertTo24HourFormat,
-    convertToUserTimeZone,
-    roundToNearestGranularity
-} from './utils.js';
 
 export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, startTimeSelect, endTimeSelect, timeFormat, granularity, sessionSelectedSlots, reapplySessionSelectedSlots) {
     const startTimeMoment = moment(startTimeSelect.value, timeFormat === '12h' ? 'h:mm A' : 'HH:mm');

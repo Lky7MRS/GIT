@@ -1,31 +1,117 @@
-// modules/form.js
 import { generateTimeSlots, reapplySessionSelectedSlots, updateSessionSelectedSlots } from './table.js';
-import { populateTimeDropdowns, convertTo12HourFormat, convertTo24HourFormat, convertToUserTimeZone } from './utils.js';
+import { populateTimeDropdowns, convertTo12HourFormat, convertTo24HourFormat, convertToUserTimeZone, convertTimesSessionStorage } from './utils.js';
 import { timeFormat, granularity, updateTimeFormat, updateGranularity, sessionSelectedSlots } from '../script.js';
+import { saveDataToFirebase } from './storage.js';
+import moment from 'moment';
 
 export function setupForm(form, timeZoneSelect, timeFormatSelect, granularitySelect, startTimeSelect, endTimeSelect, startDateElement, endDateElement, tableBody, tableHeader, resetButton) {
+
+    // Populate time zones
+    moment.tz.names().forEach(zone => {
+        const option = document.createElement('option');
+        option.value = zone;
+        option.text = zone;
+        timeZoneSelect.appendChild(option);
+    });
+
+    function saveFormData() {
+        const formData = {
+            timeZone: timeZoneSelect.value,
+            timeFormat: timeFormatSelect.value,
+            granularity: granularitySelect.value,
+            startTime: startTimeSelect.value,
+            endTime: endTimeSelect.value,
+            startDate: startDateElement.value,
+            endDate: endDateElement.value,
+            sessionSelectedSlots: sessionStorage.getItem('sessionSelectedSlots')
+        };
+        localStorage.setItem('formData', JSON.stringify(formData));
+    }
+
+    // Function to load form data from localStorage
+    function loadFormData() {
+        const formData = JSON.parse(localStorage.getItem('formData'));
+        if (formData) {
+            timeZoneSelect.value = formData.timeZone;
+            timeFormatSelect.value = formData.timeFormat;
+            granularitySelect.value = formData.granularity;
+
+            // Populate time dropdowns before setting their values
+            populateTimeDropdowns(startTimeSelect, endTimeSelect, formData.timeFormat, formData.granularity, formData.startTime, formData.endTime, startDateElement, endDateElement, formData.startDate, formData.endDate);
+
+            // Set the values after populating the dropdowns
+            timeZoneSelect.value =  moment.tz.guess() || formData.timeZone;
+            if (formData.sessionSelectedSlots) {
+                sessionStorage.setItem('sessionSelectedSlots', formData.sessionSelectedSlots);
+            }
+
+            // Generate time slots and reapply selections
+            generateTimeSlots(
+                tableBody,
+                tableHeader,
+                formData.startDate,
+                formData.endDate,
+                startTimeSelect,
+                endTimeSelect,
+                formData.timeFormat,
+                formData.granularity,
+                sessionSelectedSlots,
+                reapplySessionSelectedSlots
+            );
+        } else {
+            // Initialize for new users
+            const startDate = moment().format('YYYY-MM-DD');
+            const endDate = moment().add(1, 'week').format('YYYY-MM-DD');
+            // Populate time dropdowns before setting their values
+            populateTimeDropdowns(startTimeSelect, endTimeSelect, '24h', 60, '08:00', '18:00', startDateElement, endDateElement, startDate, endDate);
+
+            generateTimeSlots(
+                tableBody,
+                tableHeader,
+                startDate,
+                endDate,
+                startTimeSelect,
+                endTimeSelect,
+                '24h',
+                60,
+                sessionSelectedSlots,
+                reapplySessionSelectedSlots
+            );
+            
+            timeZoneSelect.value = moment.tz.guess();
+            saveFormData();
+        }
+    }
+
+    loadFormData();
+
+    // Event listener for form changes to save data to localStorage
+    form.addEventListener('change', saveFormData);
 
     // Event listener for time format change
     timeFormatSelect.addEventListener('change', (e) => {
         const newTimeFormat = e.target.value;
-        console.log(`Selected time format: ${newTimeFormat}`);
         updateTimeFormat(newTimeFormat);
 
+        // Convert start and end times
+        const convertTime = (time, format) => {
+            return format === '12h' ? convertTo12HourFormat(time) : convertTo24HourFormat(time);
+        };
+
+        const previousStartTime = startTimeSelect.value;
+        const previousEndTime = endTimeSelect.value;
+
+        const convertedStartTime = convertTime(previousStartTime, newTimeFormat);
+        const convertedEndTime = convertTime(previousEndTime, newTimeFormat);
+
         // Convert times in session storage
-        let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
-        sessionSelectedSlots = sessionSelectedSlots.map(slot => {
-            const { time, day } = slot;
-            const convertedTime = newTimeFormat === '12h'
-                ? convertTo12HourFormat(time)
-                : convertTo24HourFormat(time);
-            return { time: convertedTime, day };
-        });
+        let sessionSelectedSlots = convertTimesSessionStorage(newTimeFormat);
 
         // Update session storage with converted times
         sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(sessionSelectedSlots));
 
-        // Update dropdowns, regenerate table, and reapply selections
-        populateTimeDropdowns(startTimeSelect, endTimeSelect, newTimeFormat, granularity);
+        // Update with converted times
+        populateTimeDropdowns(startTimeSelect, endTimeSelect, newTimeFormat, granularity, convertedStartTime, convertedEndTime, startDateElement, endDateElement, startDateElement.value, endDateElement.value);
         generateTimeSlots(
             tableBody,
             tableHeader,
@@ -47,12 +133,15 @@ export function setupForm(form, timeZoneSelect, timeFormatSelect, granularitySel
         // Update session storage with converted times (rounded to nearest granularity)
         let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
         sessionSelectedSlots = sessionSelectedSlots.map(slot => ({
-            time: convertToUserTimeZone(slot.time, selectedTimeZone, timeFormat, granularity),
+            time: convertToUserTimeZone(slot.time, selectedTimeZone),
             day: slot.day
         }));
+
+        // Update session storage with converted times
         sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(sessionSelectedSlots));
 
-        // Regenerate the table
+        // Update dropdowns, regenerate table, and reapply selections
+        populateTimeDropdowns(startTimeSelect, endTimeSelect, timeFormat, granularity, startTimeSelect.value, endTimeSelect.value, startDateElement, endDateElement, startDateElement.value, endDateElement.value);
         generateTimeSlots(
             tableBody,
             tableHeader,
@@ -141,75 +230,17 @@ export function setupForm(form, timeZoneSelect, timeFormatSelect, granularitySel
         form.reset();
         tableBody.innerHTML = '';
 
-        // Reset to default settings
-        updateTimeFormat('24h');
-        timeFormatSelect.value = '24h';
-        updateGranularity(60);
-        granularitySelect.value = 60;
-
-        // Get today and a week from today in 'YYYY-MM-DD' format
-        const today = moment().format('YYYY-MM-DD');
-        const weeksFromToday = moment().add(1, 'week').format('YYYY-MM-DD');
-
-        // Set the start and end dates
-        document.getElementById('startDate').value = today;
-        document.getElementById('endDate').value = weeksFromToday;
-
-        // Populate time dropdowns and generate time slots
-        populateTimeDropdowns(startTimeSelect, endTimeSelect, timeFormat, granularity);
-        generateTimeSlots(
-            tableBody,
-            tableHeader,
-            today,
-            weeksFromToday,
-            startTimeSelect,
-            endTimeSelect,
-            timeFormat,
-            granularity,
-            [],
-            reapplySessionSelectedSlots
-        );
-        timeZoneSelect.value = moment.tz.guess();
-
         // Clear session storage
         sessionStorage.removeItem('sessionSelectedSlots');
+        // Clear local storage
+        localStorage.removeItem('formData');
+        loadFormData();
     });
 
     // Save Data to Firebase
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-
         let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
-        const selectedSlots24h = sessionSelectedSlots.map(slot => ({
-            time: timeFormat === '12h' ? convertTo24HourFormat(slot.time) : slot.time,
-            day: slot.day
-        }));
-
-        const formData = {
-            name: document.getElementById('userName').value,
-            timeZone: timeZoneSelect.value,
-            note: document.getElementById('note').value,
-            startDate: document.getElementById('startDate').value,
-            endDate: document.getElementById('endDate').value,
-            timeFormat: timeFormat,
-            selectedSlots: selectedSlots24h,
-            startTime: startTimeSelect.value,
-            endTime: endTimeSelect.value,
-            granularity: granularity
-        };
-
-        try {
-            const userId = localStorage.getItem('userId').toString();
-            //const userId = auth.currentUser.uid;
-            const availabilitiesRef = ref(db, 'availabilities/' + userId);
-            const newAvailabilityRef = push(availabilitiesRef);
-            await set(newAvailabilityRef, formData);
-
-            localStorage.setItem('userAvailability', JSON.stringify(formData));
-            alert(`Thank you, ${formData.name}! Your availability from ${formData.startDate} to ${formData.endDate} has been recorded.`);
-        } catch (error) {
-            console.error("Error saving data to Firebase:", error);
-            alert("An error occurred while saving your availability.");
-        }
+        await saveDataToFirebase(timeFormat, sessionSelectedSlots);
     });
 }
