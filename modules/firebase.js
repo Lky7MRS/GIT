@@ -5,13 +5,14 @@ import { getAuth } from "firebase/auth";
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey:,
-  authDomain:,
-  databaseURL:,
-  projectId: ,
-  storageBucket: ,
-  messagingSenderId: ,
-  appId: 
+  apiKey: "AIzaSyAufI82VhZ1yq8FwOEAtg6gwASarTdnzJM",
+  authDomain: "scheduler-f2a71.firebaseapp.com",
+  databaseURL:
+    "https://scheduler-f2a71-default-rtdb.europe-west1.firebasedatabase.app/",
+  projectId: "scheduler-f2a71",
+  storageBucket: "scheduler-f2a71.appspot.com",
+  messagingSenderId: "943615224751",
+  appId: "1:943615224751:web:dd07e0a67b2965aafb9d5a",
 };
 
 // Initialize Firebase
