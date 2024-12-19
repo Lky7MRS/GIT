@@ -49,6 +49,7 @@ export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, st
     while (currentDay.isSameOrBefore(end, 'day')) {
         const dayName = currentDay.format('dddd');
         const date = currentDay.format('DD/MM');
+        const year = currentDay.year();
         dayHeaders.push(`<th>${dayName}<br>(${date})</th>`);
         currentDay.add(1, 'day');
     }
@@ -58,15 +59,29 @@ export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, st
     tableBody.innerHTML = times.map(time => {
         return `<tr>
             <td>${time}</td>
-            ${dayHeaders.map(() => `<td class='time-slot'></td>`).join('')} 
+            ${dayHeaders.map((header, index) => {
+            const day = header.match(/\(([^)]+)\)/)[1];
+            const year = start.clone().add(index, 'days').year();
+            const fullDate = `${day}/${year}`;
+            return `<td class='time-slot' data-time='${time}' data-date='${fullDate}'></td>`;
+        }).join('')}
         </tr>`;
     }).join('');
 
-    reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
+    // Add event listeners for cell selection
+    Array.from(tableBody.querySelectorAll('.time-slot')).forEach(cell => {
+        cell.addEventListener('click', () => {
+            updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
+        });
+    });
+
+    reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start);
 }
 
-export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots) {
+export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start) {
     sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
+
+    console.log("Reapplying session selected slots:", sessionSelectedSlots); // Debugging line
 
     Array.from(tableBody.rows).forEach(row => {
         const time = row.cells[0].innerText;
@@ -75,12 +90,18 @@ export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelec
             const dayIndex = cell.cellIndex;
 
             if (tableHeader.cells[dayIndex]) {
-                const day = tableHeader.cells[dayIndex].innerText;
+                const dayHeader = tableHeader.cells[dayIndex].innerText;
+                const dayMatch = dayHeader.match(/\(([^)]+)\)/);
+                const day = dayMatch ? dayMatch[1] : null;
+                const year = start.clone().add(dayIndex - 1, 'days').year();
+                const fullDate = `${day}/${year}`;
+                console.log(`Checking cell for time: ${time}, date: ${fullDate}`); // Debugging line
 
                 const isSelected = sessionSelectedSlots.some(slot => {
-                    return slot.time === time && slot.day === day;
+                    return slot.time === time && slot.date === fullDate;
                 });
 
+                console.log(`Slot selected: ${isSelected}`); // Debugging line
                 cell.classList.toggle('selected', isSelected);
             }
         });
@@ -89,11 +110,10 @@ export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelec
 
 export function updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots) {
     const selectedSlots = Array.from(document.querySelectorAll('.time-slot.selected')).map(slot => {
-        const time = slot.parentElement.cells[0].innerText;
-        const day = tableHeader.cells[slot.cellIndex].innerText;
-        return { time, day };
+        const time = slot.dataset.time;
+        const date = slot.dataset.date;
+        return { time, date };
     });
-    sessionSelectedSlots.length = 0; // Clear the existing array
-    sessionSelectedSlots.push(...selectedSlots); // Push new items
-    sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(sessionSelectedSlots));
+
+    sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(selectedSlots));
 }

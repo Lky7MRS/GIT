@@ -71,6 +71,8 @@ tableBody.addEventListener('mouseup', () => {
     hoveredSlots.forEach(slot => {
         slot.classList.remove('hover');
     });
+
+    updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
 });
 
 tableBody.addEventListener('click', (e) => {

@@ -88,7 +88,7 @@ export async function saveDataToFirebase(timeFormat, sessionSelectedSlots) {
     const selectedSlots24h = sessionSelectedSlots.map(slot => ({
         time: timeFormat === '12h' ? convertTo24HourFormat(slot.time) : slot.time,
         day: slot.day
-    }));
+    })).filter(slot => slot.time && slot.day);
 
     try {
         const dbRef = ref(db, 'selectedSlots');

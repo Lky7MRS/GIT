@@ -36,14 +36,14 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
         const formData = JSON.parse(localStorage.getItem('formData'));
         if (formData) {
             userName.value = formData.userName;
-            userNote.value = formData.userNote;  
+            userNote.value = formData.userNote;
             timeZoneSelect.value = formData.timeZone;
             timeFormatSelect.value = formData.timeFormat;
             granularitySelect.value = formData.granularity;
 
             populateTimeDropdowns(startTimeSelect, endTimeSelect, formData.timeFormat, formData.granularity, formData.startTime, formData.endTime, startDateElement, endDateElement, formData.startDate, formData.endDate);
 
-            timeZoneSelect.value =  moment.tz.guess() || formData.timeZone;
+            timeZoneSelect.value = moment.tz.guess() || formData.timeZone;
             if (formData.sessionSelectedSlots) {
                 sessionStorage.setItem('sessionSelectedSlots', formData.sessionSelectedSlots);
             }
@@ -79,7 +79,7 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
                 sessionSelectedSlots,
                 reapplySessionSelectedSlots
             );
-            
+
             timeZoneSelect.value = moment.tz.guess();
             saveFormData();
         }
@@ -182,8 +182,32 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
     endDateElement.addEventListener('change', (e) => {
         const startDate = moment(startDateElement.value, 'YYYY-MM-DD');
         const endDate = moment(endDateElement.value, 'YYYY-MM-DD');
-    
+
         if (endDate.isBefore(startDate)) {
+            // Swap the dates
+            startDateElement.value = endDate.format('YYYY-MM-DD');
+            endDateElement.value = startDate.format('YYYY-MM-DD');
+        }
+        generateTimeSlots(
+            tableBody,
+            tableHeader,
+            startDateElement.value,
+            endDateElement.value,
+            startTimeSelect,
+            endTimeSelect,
+            timeFormat,
+            granularity,
+            sessionSelectedSlots,
+            reapplySessionSelectedSlots
+        );
+    });
+
+    // Event listener for start date change
+    startDateElement.addEventListener('change', (e) => {
+        const startDate = moment(startDateElement.value, 'YYYY-MM-DD');
+        const endDate = moment(endDateElement.value, 'YYYY-MM-DD');
+
+        if (startDate.isAfter(endDate)) {
             // Swap the dates
             startDateElement.value = endDate.format('YYYY-MM-DD');
             endDateElement.value = startDate.format('YYYY-MM-DD');
@@ -253,7 +277,7 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
         saveFormData();
         let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
         await saveDataToFirebase(timeFormat, sessionSelectedSlots);
-
+    
         // Send Discord notification
         const formData = JSON.parse(localStorage.getItem('formData'));
         if (formData) {
@@ -263,7 +287,8 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
                 formData.timeZone,
                 formData.startDate,
                 formData.endDate,
-                JSON.parse(formData.sessionSelectedSlots)
+                JSON.parse(formData.sessionSelectedSlots),
+                formData.timeFormat,
             );
         }
     });

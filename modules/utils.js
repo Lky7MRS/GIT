@@ -47,11 +47,11 @@ export function roundToNearestGranularity(momentObj, granularityMinutes) {
 export function convertTimesSessionStorage(newTimeFormat) {
     let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
     sessionSelectedSlots = sessionSelectedSlots.map(slot => {
-        const { time, day } = slot;
+        const { time, date } = slot;
         const convertedTime = newTimeFormat === '12h'
             ? convertTo12HourFormat(time)
             : convertTo24HourFormat(time);
-        return { time: convertedTime, day };
+        return { time: convertedTime, date };
     });
     return sessionSelectedSlots;
 }

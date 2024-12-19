@@ -1,9 +1,11 @@
 import axios from "axios";
+import moment from "moment";
+import { convertTo24HourFormat } from "./utils.js";
 
 const webhookURL =
-  "";
+  ""
 
-/**
+ /**
  * Sends a message to the Discord webhook.
  * @param {string} userName - The user's name.
  * @param {string} userNote - The user's note.
@@ -11,6 +13,7 @@ const webhookURL =
  * @param {string} startDate - The start date.
  * @param {string} endDate - The end date.
  * @param {Array} selectedSlots - The selected slots.
+ * @param {string} timeFormat - The time format ('12h' or '24h').
  */
 export async function sendDiscordNotification(
   userName,
@@ -18,43 +21,27 @@ export async function sendDiscordNotification(
   timeZone,
   startDate,
   endDate,
-  selectedSlots
+  selectedSlots,
+  timeFormat
 ) {
   const days = {};
 
-  // Group slots by day and date
-  selectedSlots.forEach((slot) => {
-    const [day, date] = slot.day.split("\n");
-    const key = `${day} (${date})`;
-    if (!days[key]) {
-      days[key] = [];
+  // Group slots by date
+  selectedSlots.forEach(slot => {
+    const date = moment(slot.date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    if (!days[date]) {
+      days[date] = [];
     }
-    days[key].push(slot.time);
+    days[date].push(slot.time);
   });
 
-  // Log the grouped days and times
-  console.log("Grouped days and times:", days);
-
-  // Sort times for each day
-  Object.keys(days).forEach((day) => {
-    days[day].sort();
-  });
-
-  // Sort the days by date
-  const sortedDays = Object.keys(days).sort((a, b) => {
-    // Extract date in DD/MM format
-    const dateA = a.match(/\((\d{2}\/\d{2})\)/)[1]; 
-    const dateB = b.match(/\((\d{2}\/\d{2})\)/)[1];
-    // Create Date objects with the extracted date and current year
-    const dateAObj = new Date(`${dateA}/${new Date().getFullYear()}`); 
-    const dateBObj = new Date(`${dateB}/${new Date().getFullYear()}`);
-    return dateAObj - dateBObj;
-  });
+  // Sort dates
+  const sortedDates = Object.keys(days).sort((a, b) => new Date(a) - new Date(b));
 
   // Format the message
-  const formattedSlots = sortedDays
-    .map((day) => {
-      const times = days[day];
+  const formattedSlots = sortedDates
+    .map((date) => {
+      const times = days[date];
       const timeBlocks = [];
       let startTime = times[0];
       let endTime = times[0];
@@ -82,36 +69,36 @@ export async function sendDiscordNotification(
       timeBlocks.push({ start: startTime, end: endTime });
 
       const formattedTimeBlocks = timeBlocks
-        .map((block) => {
+        .map((block, index) => {
+          const start = timeFormat === "12h" ? convertTo24HourFormat(block.start) : block.start;
+          const end = timeFormat === "12h" ? convertTo24HourFormat(block.end) : block.end;
           const startTimestamp = Math.floor(
-            new Date(`${startDate.split("T")[0]}T${block.start}:00`).getTime() / 1000
+            new Date(`${date}T${start}:00`).getTime() / 1000
           );
           const endTimestamp = Math.floor(
-            new Date(`${startDate.split("T")[0]}T${block.end}:00`).getTime() / 1000 + 59 * 60
+            new Date(`${date}T${end}:00`).getTime() / 1000 + 59 * 60
           );
-          return `<t:${startTimestamp}:t> - <t:${endTimestamp}:t>`;
+          if (index === 0) {
+            return `<t:${startTimestamp}:f> - <t:${endTimestamp}:t>`;
+          } else {
+            return `<t:${startTimestamp}:t> - <t:${endTimestamp}:t>`;
+          }
         })
         .join(", ");
 
-      // Remove double parentheses from the date
-      const formattedDay = day.replace(/\(\(/g, "(").replace(/\)\)/g, ")");
-
-      return `**${formattedDay}**: ${formattedTimeBlocks}`;
+      return formattedTimeBlocks;
     })
     .join("\n");
 
-  // Log the formatted slots
-  console.log("Formatted slots:", formattedSlots);
-
   const message = `
-**Name:** ${userName}
-**Note:** ${userNote}
-**Time Zone:** ${timeZone}
-**Start Date:** <t:${Math.floor(new Date(startDate).getTime() / 1000)}:d>
-**End Date:** <t:${Math.floor(new Date(endDate).getTime() / 1000)}:d>
-**Availability:**
-${formattedSlots}
-`;
+    **Name:** ${userName}
+    **Note:** ${userNote}
+    **Time Zone:** ${timeZone}
+    **Start Date:** <t:${Math.floor(new Date(startDate).getTime() / 1000)}:D>
+    **End Date:** <t:${Math.floor(new Date(endDate).getTime() / 1000)}:D>
+    **Availability:**
+    ${formattedSlots}
+    `;
 
   console.log("Generated message:", message); // Debugging line
 
