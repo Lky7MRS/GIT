@@ -4,10 +4,11 @@ import {
     updateSessionSelectedSlots
 } from "./modules/table.js";
 import { setupForm } from "./modules/form.js";
-import { populateTimeDropdowns } from "./modules/utils.js";
 
 // ---------- Initialization ----------
 const form = document.getElementById('availabilityForm');
+const userName = document.getElementById('userName');
+const userNote = document.getElementById('note');
 const tableBody = document.querySelector('#availabilityTable tbody');
 const tableHeader = document.querySelector('#availabilityTable thead tr');
 const timeZoneSelect = document.getElementById('timeZone');
@@ -23,7 +24,7 @@ export let sessionSelectedSlots = [];
 export let timeFormat = '24h';
 export let granularity = 60;
 
-// Update timeFormat
+// ---------- Exported Variables ----------
 export function updateTimeFormat(newTimeFormat) {
     timeFormat = newTimeFormat;
 }
@@ -119,6 +120,8 @@ exportCSVButton.addEventListener('click', () => {
 // Call setupForm to initialize form-related functionalities
 setupForm(
     form,
+    userName,
+    userNote,
     timeZoneSelect,
     timeFormatSelect,
     granularitySelect,

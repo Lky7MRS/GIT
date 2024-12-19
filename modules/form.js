@@ -1,10 +1,10 @@
-import { generateTimeSlots, reapplySessionSelectedSlots, updateSessionSelectedSlots } from './table.js';
+import { generateTimeSlots, reapplySessionSelectedSlots } from './table.js';
 import { populateTimeDropdowns, convertTo12HourFormat, convertTo24HourFormat, convertToUserTimeZone, convertTimesSessionStorage } from './utils.js';
 import { timeFormat, granularity, updateTimeFormat, updateGranularity, sessionSelectedSlots } from '../script.js';
 import { saveDataToFirebase } from './storage.js';
 import moment from 'moment';
 
-export function setupForm(form, timeZoneSelect, timeFormatSelect, granularitySelect, startTimeSelect, endTimeSelect, startDateElement, endDateElement, tableBody, tableHeader, resetButton) {
+export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSelect, granularitySelect, startTimeSelect, endTimeSelect, startDateElement, endDateElement, tableBody, tableHeader, resetButton) {
 
     // Populate time zones
     moment.tz.names().forEach(zone => {
@@ -16,6 +16,8 @@ export function setupForm(form, timeZoneSelect, timeFormatSelect, granularitySel
 
     function saveFormData() {
         const formData = {
+            userName: userName.value,
+            userNote: userNote.value,
             timeZone: timeZoneSelect.value,
             timeFormat: timeFormatSelect.value,
             granularity: granularitySelect.value,
@@ -32,6 +34,8 @@ export function setupForm(form, timeZoneSelect, timeFormatSelect, granularitySel
     function loadFormData() {
         const formData = JSON.parse(localStorage.getItem('formData'));
         if (formData) {
+            userName.value = formData.userName;
+            userNote.value = formData.userNote;  
             timeZoneSelect.value = formData.timeZone;
             timeFormatSelect.value = formData.timeFormat;
             granularitySelect.value = formData.granularity;
@@ -178,6 +182,14 @@ export function setupForm(form, timeZoneSelect, timeFormatSelect, granularitySel
 
     // Event listener for end date change
     endDateElement.addEventListener('change', (e) => {
+        const startDate = moment(startDateElement.value, 'YYYY-MM-DD');
+        const endDate = moment(endDateElement.value, 'YYYY-MM-DD');
+    
+        if (endDate.isBefore(startDate)) {
+            // Swap the dates
+            startDateElement.value = endDate.format('YYYY-MM-DD');
+            endDateElement.value = startDate.format('YYYY-MM-DD');
+        }
         generateTimeSlots(
             tableBody,
             tableHeader,
