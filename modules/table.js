@@ -18,11 +18,7 @@ export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, st
         let endMinuteForHour = hour === endHour ? endMinute : 59;
 
         for (let minute = startMinuteForHour; minute <= endMinuteForHour; minute += granularity) {
-            const time = moment({ hour, minute });
-
-            if (time.hour() < startHour) {
-                time.add(24, 'hours');
-            }
+            const time = moment({ hour: hour % 24, minute });
 
             if (time.isSameOrAfter(startTimeMoment) && time.isBefore(endTimeMoment)) {
                 times.push(time.format(timeFormat === '12h' ? 'h:mm A' : 'HH:mm'));
@@ -73,9 +69,7 @@ export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, st
 
 export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start) {
     sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
-
-    console.log("Reapplying session selected slots:", sessionSelectedSlots); // Debugging line
-
+    
     Array.from(tableBody.rows).forEach(row => {
         const time = row.cells[0].innerText;
 
@@ -88,13 +82,10 @@ export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelec
                 const day = dayMatch ? dayMatch[1] : null;
                 const year = start.clone().add(dayIndex - 1, 'days').year();
                 const fullDate = `${day}/${year}`;
-                console.log(`Checking cell for time: ${time}, date: ${fullDate}`); // Debugging line
-
+                const cellTimestamp = moment(`${fullDate} ${time}`, 'DD/MM/YYYY h:mm A').unix();
                 const isSelected = sessionSelectedSlots.some(slot => {
-                    return slot.time === time && slot.date === fullDate;
+                    return slot.timestamp === cellTimestamp;
                 });
-
-                console.log(`Slot selected: ${isSelected}`); // Debugging line
                 cell.classList.toggle('selected', isSelected);
             }
         });
@@ -106,7 +97,8 @@ export function updateSessionSelectedSlots(tableBody, tableHeader, sessionSelect
     const selectedSlots = Array.from(document.querySelectorAll('.time-slot.selected')).map(slot => {
         const time = slot.dataset.time;
         const date = slot.dataset.date;
-        return { time, date };
+        const timestamp = moment(`${date} ${time}`, 'DD/MM/YYYY h:mm A').unix();
+        return { timestamp };
     });
 
     sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(selectedSlots));

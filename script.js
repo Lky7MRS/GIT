@@ -1,4 +1,5 @@
 import "moment-timezone";
+import moment from "moment";
 import {
     reapplySessionSelectedSlots,
     updateSessionSelectedSlots
@@ -113,3 +114,6 @@ setupForm(
     reapplySessionSelectedSlots,
     updateSessionSelectedSlots,
 );
+
+// Reapply session selected slots on page load
+reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment());

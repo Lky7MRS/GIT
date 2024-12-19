@@ -94,24 +94,21 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
     timeFormatSelect.addEventListener('change', (e) => {
         const newTimeFormat = e.target.value;
         updateTimeFormat(newTimeFormat);
-
+    
         // Convert start and end times
         const convertTime = (time, format) => {
             return format === '12h' ? convertTo12HourFormat(time) : convertTo24HourFormat(time);
         };
-
+    
         const previousStartTime = startTimeSelect.value;
         const previousEndTime = endTimeSelect.value;
-
+    
         const convertedStartTime = convertTime(previousStartTime, newTimeFormat);
         const convertedEndTime = convertTime(previousEndTime, newTimeFormat);
-
+    
         // Convert times in session storage
         let sessionSelectedSlots = convertTimesSessionStorage(newTimeFormat);
-
-        // Update session storage with converted times
-        sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(sessionSelectedSlots));
-
+    
         // Update with converted times
         populateTimeDropdowns(startTimeSelect, endTimeSelect, newTimeFormat, granularity, convertedStartTime, convertedEndTime, startDateElement, endDateElement, startDateElement.value, endDateElement.value);
         generateTimeSlots(
@@ -126,6 +123,9 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
             sessionSelectedSlots,
             reapplySessionSelectedSlots
         );
+    
+        // Reapply session selected slots
+        reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDateElement.value, 'YYYY-MM-DD'));
     });
 
     // Event listener for time zone change
@@ -134,10 +134,10 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
 
         // Update session storage with converted times (rounded to nearest granularity)
         let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
-        sessionSelectedSlots = sessionSelectedSlots.map(slot => ({
-            time: convertToUserTimeZone(slot.time, selectedTimeZone, timeFormat, granularity),
-            date: slot.date
-        }));
+        sessionSelectedSlots = sessionSelectedSlots.map(slot => {
+            const timestamp = moment.unix(slot.timestamp).tz(selectedTimeZone).unix();
+            return { timestamp };
+        });
 
         // Update session storage with converted times
         sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(sessionSelectedSlots));
@@ -203,6 +203,9 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
             sessionSelectedSlots,
             reapplySessionSelectedSlots
         );
+
+        // Reapply session selected slots
+        reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDateElement.value, 'YYYY-MM-DD'));
     });
 
     // Event listener for start date change
@@ -227,6 +230,9 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
             sessionSelectedSlots,
             reapplySessionSelectedSlots
         );
+
+        // Reapply session selected slots
+        reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDateElement.value, 'YYYY-MM-DD'));
     });
 
     // Event listener for start time change
@@ -291,7 +297,6 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
                 formData.startDate,
                 formData.endDate,
                 JSON.parse(formData.sessionSelectedSlots),
-                formData.timeFormat,
             );
         }
     });

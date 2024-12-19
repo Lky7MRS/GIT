@@ -49,8 +49,7 @@ export async function loadDataFromFirebase(
             if (data.selectedSlots) {
                 data.selectedSlots.forEach(slot => {
                     sessionSelectedSlots.push({
-                        time: convertToUserTimeZone(slot.time, data.timeZone, data.timeFormat, data.granularity),
-                        day: slot.day
+                        timestamp: slot.timestamp
                     });
                 });
             }
@@ -80,20 +79,19 @@ export async function loadDataFromFirebase(
         }
     } catch (error) {
         console.error("Error fetching data from Firebase:", error);
-        alert("An error occurred while loading your availability.");
+        //alert("An error occurred while loading your availability.");
     }
 }
 
 export async function saveDataToFirebase(timeFormat, sessionSelectedSlots) {
-    const selectedSlots24h = sessionSelectedSlots.map(slot => ({
-        time: timeFormat === '12h' ? convertTo24HourFormat(slot.time) : slot.time,
-        day: slot.day
-    })).filter(slot => slot.time && slot.day);
+    const selectedSlots = sessionSelectedSlots.map(slot => ({
+        timestamp: slot.timestamp
+    }));
 
     try {
         const dbRef = ref(db, 'selectedSlots');
-        await set(dbRef, selectedSlots24h);
-        console.log('Data saved to Firebase:', selectedSlots24h);
+        await set(dbRef, selectedSlots);
+        console.log('Data saved to Firebase:', selectedSlots);
     } catch (error) {
         console.error('Error saving data to Firebase:', error);
     }
