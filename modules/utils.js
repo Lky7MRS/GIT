@@ -1,15 +1,24 @@
 import moment from 'moment';
 
-export function populateTimeDropdowns(startTimeSelect, endTimeSelect, timeFormat, granularity, selectedStartTime, selectedEndTime, startDateElement, endDateElement, selectedStartDate, selectedEndDate) {
-    const times = [];
-    for (let hour = 0; hour < 24; hour++) {
-        for (let minute = 0; minute < 60; minute += granularity) {
-            const time = moment({ hour, minute });
-            times.push(timeFormat === '12h' ? time.format('h:mm A') : time.format('HH:mm'));
-        }
-    }
+export function populateTimeDropdowns(
+    startTimeSelect,
+    endTimeSelect,
+    timeFormat,
+    granularity,
+    selectedStartTime,
+    selectedEndTime,
+    startDateElement,
+    endDateElement,
+    selectedStartDate,
+    selectedEndDate
+) {
+    const times = generateTimes(timeFormat, granularity);
 
     const updateDropdown = (dropdown, selectedTime) => {
+        if (!dropdown) {
+            console.error('Dropdown element is not defined:', dropdown);
+            return;
+        }
         dropdown.innerHTML = times
             .map(time => `<option value="${time}" ${time === selectedTime ? 'selected' : ''}>${time}</option>`)
             .join('');
@@ -19,6 +28,17 @@ export function populateTimeDropdowns(startTimeSelect, endTimeSelect, timeFormat
     updateDropdown(endTimeSelect, selectedEndTime);
     startDateElement.value = selectedStartDate;
     endDateElement.value = selectedEndDate;
+}
+
+function generateTimes(timeFormat, granularity) {
+    const times = [];
+    for (let hour = 0; hour < 24; hour++) {
+        for (let minute = 0; minute < 60; minute += granularity) {
+            const time = moment({ hour, minute });
+            times.push(timeFormat === '12h' ? time.format('h:mm A') : time.format('HH:mm'));
+        }
+    }
+    return times;
 }
 
 export function convertTo12HourFormat(time24h) {
@@ -34,13 +54,11 @@ export function convertToUserTimeZone(time, userTimeZone, timeFormat, granularit
     const timeInUtc = moment.utc(time, timeFormatToUse);
     const timeInUserTimeZone = timeInUtc.tz(userTimeZone);
 
-    const roundedTime = roundToNearestGranularity(timeInUserTimeZone, granularity);
-    return roundedTime.format(timeFormatToUse);
+    return roundToNearestGranularity(timeInUserTimeZone, granularity).format(timeFormatToUse);
 }
 
 export function roundToNearestGranularity(momentObj, granularityMinutes) {
-    const minutes = momentObj.minutes();
-    const roundedMinutes = Math.round(minutes / granularityMinutes) * granularityMinutes;
+    const roundedMinutes = Math.round(momentObj.minutes() / granularityMinutes) * granularityMinutes;
     return momentObj.clone().minutes(roundedMinutes).seconds(0);
 }
 

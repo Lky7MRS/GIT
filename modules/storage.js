@@ -2,7 +2,6 @@
 
 import { db } from './firebase.js'; // Import only 'db'
 import { ref, get, set } from 'firebase/database';
-import { convertTo24HourFormat } from './utils.js';
 
 export async function loadDataFromFirebase(
     userId,
@@ -58,21 +57,7 @@ export async function loadDataFromFirebase(
             timeZoneSelect.value = data.timeZone || moment.tz.guess() || "Europe/Berlin";
 
             // Generate time slots and reapply selections
-            generateTimeSlots(
-                tableBody,
-                tableHeader,
-                data.startDate,
-                data.endDate,
-                startTimeSelect,
-                endTimeSelect,
-                data.timeFormat,
-                data.granularity,
-                sessionSelectedSlots,
-                reapplySessionSelectedSlots
-            );
-
-            // Update session storage with the current state
-            updateSessionSelectedSlots(tableBody, tableHeader);
+            generateAndReapplyTimeSlots(data);
 
         } else {
             console.log("No data available for the user.");
@@ -80,6 +65,39 @@ export async function loadDataFromFirebase(
     } catch (error) {
         console.error("Error fetching data from Firebase:", error);
         //alert("An error occurred while loading your availability.");
+    }
+}
+
+// Generate time slots and reapply selections
+function generateAndReapplyTimeSlots(data) {
+    generateTimeSlots(
+        tableBody,
+        tableHeader,
+        data.startDate,
+        data.endDate,
+        startTimeSelect,
+        endTimeSelect,
+        data.timeFormat,
+        data.granularity,
+        sessionSelectedSlots,
+        reapplySessionSelectedSlots
+    );
+
+    // Update session storage with the current state
+    updateSessionSelectedSlots(tableBody, tableHeader);
+}
+
+async function fetchDataFromFirebase() {
+    try {
+        const snapshot = await get(ref(db, 'selectedSlots'));
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            generateAndReapplyTimeSlots(data);
+        } else {
+            console.log("No data available for the user.");
+        }
+    } catch (error) {
+        console.error("Error fetching data from Firebase:", error);
     }
 }
 
@@ -100,8 +118,8 @@ export async function saveDataToFirebase(timeFormat, sessionSelectedSlots) {
 // Helper function to generate a unique ID
 function generateUniqueId() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-            v = c == 'x' ? r : (r & 0x3 | 0x8);
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }

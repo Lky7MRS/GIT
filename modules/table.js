@@ -69,7 +69,7 @@ export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, st
 
 export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start) {
     sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
-    
+
     Array.from(tableBody.rows).forEach(row => {
         const time = row.cells[0].innerText;
 
@@ -125,16 +125,20 @@ export function updateStartEndClasses(tableBody) {
                 selectedCells.push(cell);
             } else if (selectedCells.length > 0) {
                 // Handle the end of a contiguous block
-                selectedCells[0].classList.add('start-time');
-                selectedCells[selectedCells.length - 1].classList.add('end-time');
+                markContiguousBlock(selectedCells);
                 selectedCells = [];
             }
         });
 
         // Handle the last contiguous block if it exists
         if (selectedCells.length > 0) {
-            selectedCells[0].classList.add('start-time');
-            selectedCells[selectedCells.length - 1].classList.add('end-time');
+            markContiguousBlock(selectedCells);
         }
     }
+}
+
+// Helper function to mark the start and end of a contiguous block
+function markContiguousBlock(cells) {
+    cells[0].classList.add('start-time');
+    cells[cells.length - 1].classList.add('end-time');
 }

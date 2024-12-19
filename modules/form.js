@@ -94,38 +94,24 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
     timeFormatSelect.addEventListener('change', (e) => {
         const newTimeFormat = e.target.value;
         updateTimeFormat(newTimeFormat);
-    
+
         // Convert start and end times
         const convertTime = (time, format) => {
             return format === '12h' ? convertTo12HourFormat(time) : convertTo24HourFormat(time);
         };
-    
+
         const previousStartTime = startTimeSelect.value;
         const previousEndTime = endTimeSelect.value;
-    
+
         const convertedStartTime = convertTime(previousStartTime, newTimeFormat);
         const convertedEndTime = convertTime(previousEndTime, newTimeFormat);
-    
+
         // Convert times in session storage
         let sessionSelectedSlots = convertTimesSessionStorage(newTimeFormat);
-    
+
         // Update with converted times
         populateTimeDropdowns(startTimeSelect, endTimeSelect, newTimeFormat, granularity, convertedStartTime, convertedEndTime, startDateElement, endDateElement, startDateElement.value, endDateElement.value);
-        generateTimeSlots(
-            tableBody,
-            tableHeader,
-            startDateElement.value,
-            endDateElement.value,
-            startTimeSelect,
-            endTimeSelect,
-            newTimeFormat,
-            granularity,
-            sessionSelectedSlots,
-            reapplySessionSelectedSlots
-        );
-    
-        // Reapply session selected slots
-        reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDateElement.value, 'YYYY-MM-DD'));
+        generateAndReapplyTimeSlots();
     });
 
     // Event listener for time zone change
@@ -144,21 +130,7 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
 
         // Update dropdowns, regenerate table, and reapply selections
         populateTimeDropdowns(startTimeSelect, endTimeSelect, timeFormat, granularity, startTimeSelect.value, endTimeSelect.value, startDateElement, endDateElement, startDateElement.value, endDateElement.value);
-        generateTimeSlots(
-            tableBody,
-            tableHeader,
-            startDateElement.value,
-            endDateElement.value,
-            startTimeSelect,
-            endTimeSelect,
-            timeFormat,
-            granularity,
-            sessionSelectedSlots,
-            reapplySessionSelectedSlots
-        );
-
-        // Reapply session selected slots
-        reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDateElement.value, 'YYYY-MM-DD'));
+        generateAndReapplyTimeSlots();
     });
 
     // Event listener for granularity change
@@ -181,16 +153,8 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
         );
     });
 
-    // Event listener for end date change
-    endDateElement.addEventListener('change', (e) => {
-        const startDate = moment(startDateElement.value, 'YYYY-MM-DD');
-        const endDate = moment(endDateElement.value, 'YYYY-MM-DD');
-
-        if (endDate.isBefore(startDate)) {
-            // Swap the dates
-            startDateElement.value = endDate.format('YYYY-MM-DD');
-            endDateElement.value = startDate.format('YYYY-MM-DD');
-        }
+    // Function to generate and reapply time slots
+    const generateAndReapplyTimeSlots = () => {
         generateTimeSlots(
             tableBody,
             tableHeader,
@@ -203,69 +167,18 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
             sessionSelectedSlots,
             reapplySessionSelectedSlots
         );
-
-        // Reapply session selected slots
         reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDateElement.value, 'YYYY-MM-DD'));
-    });
+    };
 
-    // Event listener for start date change
-    startDateElement.addEventListener('change', (e) => {
-        const startDate = moment(startDateElement.value, 'YYYY-MM-DD');
-        const endDate = moment(endDateElement.value, 'YYYY-MM-DD');
-
-        if (startDate.isAfter(endDate)) {
-            // Swap the dates
-            startDateElement.value = endDate.format('YYYY-MM-DD');
-            endDateElement.value = startDate.format('YYYY-MM-DD');
-        }
-        generateTimeSlots(
-            tableBody,
-            tableHeader,
-            startDateElement.value,
-            endDateElement.value,
-            startTimeSelect,
-            endTimeSelect,
-            timeFormat,
-            granularity,
-            sessionSelectedSlots,
-            reapplySessionSelectedSlots
-        );
-
-        // Reapply session selected slots
-        reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDateElement.value, 'YYYY-MM-DD'));
-    });
+    // Event listener for date change
+    startDateElement.addEventListener('change', generateAndReapplyTimeSlots);
+    endDateElement.addEventListener('change', generateAndReapplyTimeSlots);
 
     // Event listener for start time change
-    startTimeSelect.addEventListener('change', () => {
-        generateTimeSlots(
-            tableBody,
-            tableHeader,
-            startDateElement.value,
-            endDateElement.value,
-            startTimeSelect,
-            endTimeSelect,
-            timeFormat,
-            granularity,
-            sessionSelectedSlots,
-            reapplySessionSelectedSlots
-        );
-    });
+    startTimeSelect.addEventListener('change', generateAndReapplyTimeSlots);
 
     // Event listener for end time change
-    endTimeSelect.addEventListener('change', () => {
-        generateTimeSlots(
-            tableBody,
-            tableHeader,
-            startDateElement.value,
-            endDateElement.value,
-            startTimeSelect,
-            endTimeSelect,
-            timeFormat,
-            granularity,
-            sessionSelectedSlots,
-            reapplySessionSelectedSlots
-        );
-    });
+    endTimeSelect.addEventListener('change', generateAndReapplyTimeSlots);
 
     // Reset button handler
     resetButton.addEventListener('click', () => {

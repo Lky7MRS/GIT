@@ -157,24 +157,15 @@ table td,
 }
 
 /* Hover effect for all table cells */
-.table tbody td {
-  transition: background-color 0.2s ease;
-}
-
-/* Highlight color on hover */
-.table tbody td:hover {
-  background-color: #3a3a3a; 
-  cursor: pointer;
-}
-
-/* Hover effect for all table cells */
+.table tbody td,
 td {
   transition: background-color 0.2s ease;
+  cursor: pointer;
 }
 
+.table tbody td:hover,
 td:hover {
   background-color: #282828;
-  cursor: pointer;
 }
 
 /* Override Bootstrap's default table cell background */

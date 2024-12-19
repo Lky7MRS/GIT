@@ -76,19 +76,21 @@ tableBody.addEventListener('mouseup', () => {
     updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
 });
 
+// Event listener for updating session selected slots on click
 tableBody.addEventListener('click', (e) => {
     if (e.target.classList.contains('time-slot') && !isDragging) {
         updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
     }
 });
 
+// Event listener for adding hover class on mouseover
 tableBody.addEventListener('mouseover', (e) => {
     if (isDragging && e.target.classList.contains('time-slot')) {
-        const hoveredSlot = e.target;
-        hoveredSlot.classList.add('hover');
+        e.target.classList.add('hover');
     }
 });
 
+// Event listener for removing hover class on mouseout
 tableBody.addEventListener('mouseout', (e) => {
     if (e.target.classList.contains('time-slot')) {
         e.target.classList.remove('hover');
@@ -96,7 +98,7 @@ tableBody.addEventListener('mouseout', (e) => {
 });
 
 // ---------- Initialization Call ----------
-// Call setupForm to initialize form-related functionalities
+// Initialization call to setup form-related functionalities
 setupForm(
     form,
     userName,
