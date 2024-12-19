@@ -1,2 +1,5 @@
 # Ignore firebase.js
 modules/firebase.js
+
+# Ignore discordWebhook.js
+modules/discordWebhook.js
