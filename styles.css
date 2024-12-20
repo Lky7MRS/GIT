@@ -1,115 +1,3 @@
-/* General Styles */
-body {
-  font-family: "Roboto", sans-serif;
-  background-color: #0e0e0e;
-  color: #eee;
-  font-size: 0.9rem;
-}
-
-/* Override Bootstrap's main container background */
-main.container-fluid {
-  background-color: #0e0e0e;
-  padding: 0.5rem;
-}
-
-/* Card Styling */
-.card {
-  border-radius: 8px;
-  border: none;
-  box-shadow: 0 3px 6px rgba(255, 255, 255, 0.1); 
-  background-color: #181818;
-  padding: 0.75rem; 
-}
-
-.card-title {
-  font-weight: 500;
-  color: #eee;
-  font-size: 1rem;
-}
-
-/* Form Styling */
-.form-label {
-  font-weight: 500;
-  color: #eee;
-  font-size: 0.9rem;
-}
-
-/* Override Bootstrap form-control for dark mode */
-.form-control {
-  background-color: #212529;
-  border-color: #495057;
-  color: #eee;
-  padding: 0.5rem;
-  font-size: 0.9rem; 
-}
-
-.form-control:focus {
-  background-color: #343a40;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-  color: #eee;
-}
-
-.form-select {
-  background-color: #212529;
-  border-color: #495057;
-  color: #eee;
-  padding: 0.5rem;
-  font-size: 0.9rem;
-}
-
-/* Bootstrap primary color with alpha */
-.form-select:focus {
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); 
-}
-
-/* Table Styling */
-.table thead th {
-  background-color: #282828;
-  color: white;
-  border-bottom: none;
-}
-
-/* Override Bootstrap table-hover for dark mode */
-.table-hover tbody tr:hover {
-  background-color: #282828;
-}
-
-/* Zebra striping */
-.table tbody tr:nth-child(odd) {
-  background-color: #181818;
-}
-
-.table tbody tr:nth-child(even) {
-  background-color: #212121;
-}
-
-/* Button Styling */
-.btn-primary {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
-}
-
-.btn-primary:hover {
-  background-color: #0b5ed7;
-  border-color: #0a58ca;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  border-color: #6c757d;
-}
-
-.btn-secondary:hover {
-  background-color: #5a6268;
-  border-color: #545b62;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
 /* Selection Styles */
 table {
   user-select: none;
@@ -159,26 +47,11 @@ table td,
   color: #eee;
 }
 
-/* Match the background color with zebra striping */
-.table td {
-  font-size: 1rem;
-  color: #eee;
-  background-color: #181818; 
-}
-
-/* Hover effect for all table cells */
-.table tbody td,
-td {
-  transition: background-color 0.2s ease;
-  cursor: pointer;
-}
-
 .table tbody td:hover,
 td:hover {
   background-color: #282828;
 }
 
-/* Override Bootstrap's default table cell background */
 .table td {
   background-color: #181818; 
   color: #eee;

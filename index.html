@@ -1,23 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cross-Timezone Lesson Scheduler</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
-    <script type="importmap">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,height=device-height, initial-scale=1.0" />
+  <title>Cross-Timezone Lesson Scheduler</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.22/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
       {
         "imports": {
           "moment": "https://cdn.skypack.dev/moment@2.29.4",
@@ -29,174 +22,125 @@
         }
       }
     </script>
-  </head>
+</head>
 
-  <body class>
-    <main class="container-fluid py-4">
-      <div class="row">
-        <aside class="col-md-4 col-lg-3 mb-4">
-          <div class="card border-0 shadow-lg">
-            <div class="card-body">
-              <h2 class="card-title h4 mb-4 text-center">
-                <i class="fas fa-calendar-check me-2"></i>
-                Set Your Availability
-              </h2>
-              <form id="availabilityForm">
-                <div class="mb-3">
-                  <label for="userName" class="form-label"
-                    ><i class="fas fa-user me-2"></i>Name:</label
-                  >
-                  <input
-                    type="text"
-                    id="userName"
-                    name="userName"
-                    class="form-control"
-                    placeholder="Enter your name"
-                    required
-                  />
+<body class="bg-base-200">
+  <main class="container mx-auto p-4">
+    <div class="flex flex-col lg:flex-row gap-4">
+      <aside class="w-full lg:w-2/5">
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-xl font-bold">
+              <i class="fas fa-calendar-check"></i>
+              Set Your Availability
+            </h2>
+            <form id="availabilityForm">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="form-control">
+                  <label for="userName" class="label">
+                    <span class="label-text"><i class="fas fa-user"></i> Your Name:</span>
+                  </label>
+                  <input type="text" id="userName" name="userName" class="input input-bordered"
+                    placeholder="Enter your name" required />
                 </div>
-                <div class="mb-3">
-                  <label for="timeZone" class="form-label"
-                    ><i class="fas fa-globe me-2"></i>Time Zone:</label
-                  >
-                  <select
-                    id="timeZone"
-                    name="timeZone"
-                    class="form-select"
-                  ></select>
+                <div class="form-control">
+                  <label for="timeZone" class="label">
+                    <span class="label-text"><i class="fas fa-globe"></i> Time Zone:</span>
+                  </label>
+                  <select id="timeZone" name="timeZone" class="select select-bordered"></select>
                 </div>
-                <div class="mb-3">
-                  <label for="timeFormat" class="form-label"
-                    ><i class="fas fa-clock me-2"></i>Time Format:</label
-                  >
-                  <select id="timeFormat" name="timeFormat" class="form-select">
+                <div class="form-control">
+                  <label for="timeFormat" class="label">
+                    <span class="label-text"><i class="fas fa-clock"></i> Time Format:</span>
+                  </label>
+                  <select id="timeFormat" name="timeFormat" class="select select-bordered">
                     <option value="24h">24H</option>
                     <option value="12h">12H</option>
                   </select>
                 </div>
-                <div class="mb-3">
-                  <label for="granularity" class="form-label"
-                    ><i class="fas fa-sliders-h me-2"></i> Granularity:</label
-                  >
-                  <select
-                    id="granularity"
-                    name="granularity"
-                    class="form-select"
-                  >
+                <div class="form-control">
+                  <label for="granularity" class="label">
+                    <span class="label-text"><i class="fas fa-sliders-h"></i> Granularity:</span>
+                  </label>
+                  <select id="granularity" name="granularity" class="select select-bordered" disabled>
                     <option value="60" selected>1 hour</option>
                   </select>
                 </div>
-                <div class="row g-3 mb-3">
-                  <div class="col-md-6">
-                    <label for="startDate" class="form-label"
-                      ><i class="fas fa-calendar-alt me-2"></i>Start
-                      Date:</label
-                    >
-                    <input
-                      type="date"
-                      id="startDate"
-                      name="startDate"
-                      class="form-control"
-                      required
-                    />
-                  </div>
-                  <div class="col-md-6">
-                    <label for="endDate" class="form-label">
-                      <i class="fas fa-calendar-alt me-2"></i>End Date:
-                    </label>
-                    <input
-                      type="date"
-                      id="endDate"
-                      name="endDate"
-                      class="form-control"
-                      required
-                    />
-                  </div>
-                </div>
-                <div class="row g-3 mb-3">
-                  <div class="col-md-6">
-                    <label for="startTime" class="form-label">
-                      <i class="fas fa-hourglass-start me-2"></i>Start Time:
-                    </label>
-                    <select
-                      id="startTime"
-                      name="startTime"
-                      class="form-select"
-                    ></select>
-                  </div>
-                  <div class="col-md-6">
-                    <label for="endTime" class="form-label">
-                      <i class="fas fa-hourglass-end me-2"></i>End Time:
-                    </label>
-                    <select
-                      id="endTime"
-                      name="endTime"
-                      class="form-select"
-                    ></select>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="note" class="form-label">
-                    <i class="fas fa-sticky-note me-2"></i>Note (optional):
+                <div class="form-control">
+                  <label for="startDate" class="label">
+                    <span class="label-text"><i class="fas fa-calendar-alt"></i> Start Date:</span>
                   </label>
-                  <textarea
-                    id="note"
-                    name="note"
-                    class="form-control"
-                    placeholder="Add a note"
-                    rows="3"
-                  ></textarea>
+                  <input type="date" id="startDate" name="startDate" class="input input-bordered" required />
                 </div>
-                <div class="d-grid gap-2 mt-4">
-                  <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>Submit
+                <div class="form-control">
+                  <label for="endDate" class="label">
+                    <span class="label-text"><i class="fas fa-calendar-alt"></i> End Date:</span>
+                  </label>
+                  <input type="date" id="endDate" name="endDate" class="input input-bordered" required />
+                </div>
+                <div class="form-control">
+                  <label for="startTime" class="label">
+                    <span class="label-text"><i class="fas fa-hourglass-start"></i> Start
+                      Time:</span>
+                  </label>
+                  <select id="startTime" name="startTime" class="select select-bordered"></select>
+                </div>
+                <div class="form-control">
+                  <label for="endTime" class="label">
+                    <span class="label-text"><i class="fas fa-hourglass-end"></i> End Time:</span>
+                  </label>
+                  <select id="endTime" name="endTime" class="select select-bordered"></select>
+                </div>
+                <div class="form-control col-span-2">
+                  <label for="note" class="label">
+                    <span class="label-text"><i class="fas fa-sticky-note"></i> Note
+                      (optional):</span>
+                  </label>
+                  <textarea id="note" name="note" class="textarea textarea-bordered" placeholder="Add a note"
+                    rows="3"></textarea>
+                </div>
+                <div class="form-control col-span-2 grid grid-cols-5 gap-2 mt-1">
+                  <button type="submit" class="btn btn-primary col-span-3 bg-blue-500 hover:bg-blue-100">
+                    <i class="fas fa-save"></i> Submit
                   </button>
-                  <button
-                    type="button"
-                    id="resetButton"
-                    class="btn btn-secondary"
-                  >
-                    <i class="fas fa-undo me-2"></i>Reset
-                  </button>
-                  <button
-                    type="button"
-                    id="exportCSVButton"
-                    class="btn btn-secondary"
-                  >
-                    <i class="fas fa-file-csv me-2"></i>Export to CSV
+                  <button type="button" id="exportCSVButton"
+                  class="btn btn-secondary col-span-1 bg-green-500 hover:bg-green-100">
+                  <i class="fas fa-file-csv"></i>
+                </button>
+                  <button type="button" id="resetButton"
+                    class="btn btn-secondary col-span-1 bg-red-500 hover:bg-gray-100">
+                    <i class="fas fa-undo"></i>
                   </button>
                 </div>
-              </form>
-            </div>
-          </div>
-        </aside>
-
-        <section class="col-md-8 col-lg-9">
-          <div class="card border-0 shadow-lg">
-            <div class="card-body">
-              <h2 class="card-title h4 mb-4 text-center">
-                <i class="fas fa-table me-2"></i>
-                Your Schedule
-              </h2>
-              <div class="table-responsive">
-                <table
-                  id="availabilityTable"
-                  class="table table-hover table-striped"
-                >
-                  <thead class="table-dark">
-                    <tr>
-                      <th><i class="fas fa-clock"></i> Time</th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
               </div>
+            </form>
+          </div>
+        </div>
+      </aside>
+
+      <section class="w-full lg:w-4/4">
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title text-xl font-bold">
+              <i class="fas fa-table"></i>
+              Your Schedule
+            </h2>
+            <div class="overflow-x-auto">
+              <table id="availabilityTable" class="table w-full">
+                <thead>
+                  <tr>
+                    <th><i class="fas fa-clock"></i> Time</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
             </div>
           </div>
-        </section>
-      </div>
-    </main>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="script.js"></script>
-  </body>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="script.js"></script>
+</body>
+
 </html>
