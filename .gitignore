@@ -3,3 +3,9 @@ modules/firebase.js
 
 # Ignore discordWebhook.js
 modules/discordWebhook.js
+
+# Ignore node_modules
+node_modules
+
+# Ignore build
+dist

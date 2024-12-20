@@ -109,7 +109,6 @@ export async function saveDataToFirebase(timeFormat, sessionSelectedSlots) {
     try {
         const dbRef = ref(db, 'selectedSlots');
         await set(dbRef, selectedSlots);
-        console.log('Data saved to Firebase:', selectedSlots);
     } catch (error) {
         console.error('Error saving data to Firebase:', error);
     }
