@@ -563,6 +563,9 @@ video {
 .grid {
   display: grid;
 }
+.hidden {
+  display: none;
+}
 .h-full {
   height: 100%;
 }
@@ -667,6 +670,10 @@ td:hover {
 .table td {
   background-color: #181818;
   color: #eee;
+}
+
+.hidden {
+  display: none;
 }
 
 .hover\:bg-blue-100:hover {

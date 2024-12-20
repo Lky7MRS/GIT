@@ -68,7 +68,7 @@ export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, st
 }
 
 export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start) {
-    sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
+    sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || sessionSelectedSlots;
 
     Array.from(tableBody.rows).forEach(row => {
         const time = row.cells[0].innerText;
@@ -93,7 +93,7 @@ export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelec
     updateStartEndClasses(tableBody);
 }
 
-export function updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots) {
+export function updateSessionSelectedSlots(tableBody) {
     const selectedSlots = Array.from(document.querySelectorAll('.time-slot.selected')).map(slot => {
         const time = slot.dataset.time;
         const date = slot.dataset.date;

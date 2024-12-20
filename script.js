@@ -5,6 +5,7 @@ import {
     updateSessionSelectedSlots
 } from "./modules/table.js";
 import { setupForm } from "./modules/form.js";
+import { updateAggregatedTable } from "./modules/availability.js";
 
 // ---------- Initialization ----------
 const form = document.getElementById('availabilityForm');
@@ -49,7 +50,7 @@ tableBody.addEventListener('mousedown', (e) => {
         isSelecting = !clickedSlot.classList.contains('selected');
 
         clickedSlot.classList.toggle('selected', isSelecting);
-        updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
+        updateSessionSelectedSlots(tableBody);
     }
 });
 
@@ -59,7 +60,7 @@ tableBody.addEventListener('mousemove', (e) => {
         if (currentSlot !== startSlot) {
             currentSlot.classList.toggle('selected', isSelecting);
             currentSlot.classList.add('hover');
-            updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
+            updateSessionSelectedSlots(tableBody);
         }
     }
 });
@@ -73,13 +74,13 @@ tableBody.addEventListener('mouseup', () => {
         slot.classList.remove('hover');
     });
 
-    updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
+    updateSessionSelectedSlots(tableBody);
 });
 
 // Event listener for updating session selected slots on click
 tableBody.addEventListener('click', (e) => {
     if (e.target.classList.contains('time-slot') && !isDragging) {
-        updateSessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots);
+        updateSessionSelectedSlots(tableBody);
     }
 });
 
@@ -97,25 +98,58 @@ tableBody.addEventListener('mouseout', (e) => {
     }
 });
 
-// ---------- Initialization Call ----------
-// Initialization call to setup form-related functionalities
-setupForm(
-    form,
-    userName,
-    userNote,
-    timeZoneSelect,
-    timeFormatSelect,
-    granularitySelect,
-    startTimeSelect,
-    endTimeSelect,
-    document.getElementById('startDate'),
-    document.getElementById('endDate'),
-    tableBody,
-    tableHeader,
-    resetButton,
-    reapplySessionSelectedSlots,
-    updateSessionSelectedSlots,
-);
+document.addEventListener('DOMContentLoaded', () => {
+    const yourScheduleTab = document.getElementById('yourScheduleTab');
+    const aggregatedAvailabilityTab = document.getElementById('aggregatedAvailabilityTab');
+    const yourScheduleSection = document.getElementById('yourSchedule');
+    const aggregatedAvailabilitySection = document.getElementById('aggregatedAvailability');
 
-// Reapply session selected slots on page load
-reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment());
+    yourScheduleTab.addEventListener('click', () => {
+        yourScheduleTab.classList.add('tab-active');
+        aggregatedAvailabilityTab.classList.remove('tab-active');
+        yourScheduleSection.classList.remove('hidden');
+        aggregatedAvailabilitySection.classList.add('hidden');
+    });
+
+    aggregatedAvailabilityTab.addEventListener('click', async () => {
+        yourScheduleTab.classList.remove('tab-active');
+        aggregatedAvailabilityTab.classList.add('tab-active');
+        yourScheduleSection.classList.add('hidden');
+        aggregatedAvailabilitySection.classList.remove('hidden');
+
+        // Clear sessionSelectedSlots
+        sessionStorage.removeItem('sessionSelectedSlots');
+
+        await updateAggregatedTable();
+    });
+
+    // Add event listeners to form elements
+    [startDate, endDate, startTimeSelect, endTimeSelect, timeFormatSelect, granularitySelect].forEach(element => {
+        if (element && typeof element.addEventListener === 'function') {
+            element.addEventListener('change', updateAggregatedTable);
+        } else {
+            console.error('Element not found or is not a valid HTML element:', element);
+        }
+    });
+
+    setupForm(
+        form,
+        userName,
+        userNote,
+        timeZoneSelect,
+        timeFormatSelect,
+        granularitySelect,
+        startTimeSelect,
+        endTimeSelect,
+        document.getElementById('startDate'),
+        document.getElementById('endDate'),
+        tableBody,
+        tableHeader,
+        resetButton,
+        reapplySessionSelectedSlots,
+        updateSessionSelectedSlots,
+    );
+
+    // Reapply session selected slots on page load
+    reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment());
+});

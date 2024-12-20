@@ -197,11 +197,12 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         saveFormData();
+        const formData = JSON.parse(localStorage.getItem('formData'));
+
         let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
-        await saveDataToFirebase(timeFormat, sessionSelectedSlots);
+        await saveDataToFirebase(formData);
 
         // Send Discord notification
-        const formData = JSON.parse(localStorage.getItem('formData'));
         if (formData) {
             await sendDiscordNotification(
                 formData.userName,
