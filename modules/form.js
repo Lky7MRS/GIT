@@ -190,6 +190,8 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
         sessionStorage.removeItem('sessionSelectedSlots');
         // Clear local storage
         localStorage.removeItem('formData');
+        //clear in-memory sessionSelectedSlots
+        sessionSelectedSlots.length = 0;
         loadFormData();
     });
 
@@ -199,7 +201,7 @@ export function setupForm(form, userName, userNote, timeZoneSelect, timeFormatSe
         saveFormData();
         const formData = JSON.parse(localStorage.getItem('formData'));
 
-        let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
+        //let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
         await saveDataToFirebase(formData);
 
         // Send Discord notification

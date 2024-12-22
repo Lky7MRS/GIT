@@ -639,7 +639,8 @@ table {
 
 /* Transitions */
 table td,
-.time-slot {
+.time-slot
+.aggregated-availability-time-slot {
   transition: background-color 0.2s ease, transform 0.3s ease;
 }
 
@@ -674,6 +675,24 @@ td:hover {
 
 .hidden {
   display: none;
+}
+
+/* Aggregated Availability Time Slot Styles */
+.aggregated-availability-time-slot.selected {
+  background-color: #0d47a1;
+  color: white;
+}
+
+.aggregated-availability-time-slot.start-time {
+  border-top: 5px solid #00aa30;
+}
+
+.aggregated-availability-time-slot.end-time {
+  border-bottom: 5px solid #dc3545;
+}
+
+.aggregated-availability-time-slot.hover {
+  background-color: #3a3a3a;
 }
 
 .hover\:bg-blue-100:hover {

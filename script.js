@@ -12,17 +12,27 @@ const form = document.getElementById('availabilityForm');
 const userName = document.getElementById('userName');
 const userNote = document.getElementById('note');
 const tableBody = document.querySelector('#availabilityTable tbody');
+const aggregatedAvailabilityTableBody = document.querySelector('#aggregatedAvailabilityTable tbody');
 const tableHeader = document.querySelector('#availabilityTable thead tr');
 const timeZoneSelect = document.getElementById('timeZone');
 const resetButton = document.getElementById('resetButton');
+const startDate = document.getElementById('startDate');
+const endDate = document.getElementById('endDate');
 const startTimeSelect = document.getElementById('startTime');
 const endTimeSelect = document.getElementById('endTime');
 const timeFormatSelect = document.getElementById('timeFormat');
 const granularitySelect = document.getElementById('granularity');
 const exportCSVButton = document.getElementById('exportCSVButton');
+const yourScheduleTab = document.getElementById('yourScheduleTab');
+const aggregatedAvailabilityTab = document.getElementById('aggregatedAvailabilityTab');
+const yourScheduleSection = document.getElementById('yourSchedule');
+const aggregatedAvailabilitySection = document.getElementById('aggregatedAvailability');
+const formHeader = document.getElementById('availabilityFormHeader');
+const formDivider = document.getElementById('availabilityFormDivider');
+
 
 // Default settings
-export let sessionSelectedSlots = [];
+export let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
 export let timeFormat = '24h';
 export let granularity = 60;
 
@@ -38,73 +48,52 @@ export function updateGranularity(newGranularity) {
 // ---------- Event Listeners ----------
 
 // Handle mouse interactions for slot selection
+// Handle mouse interactions for slot selection
 let isDragging = false;
 let startSlot = null;
 let isSelecting = true;
 
-tableBody.addEventListener('mousedown', (e) => {
-    if (e.target.classList.contains('time-slot')) {
+function handleMouseDown(e, tableBody, updateFunction, slotClass) {
+    if (e.target.classList.contains(slotClass) && e.currentTarget === tableBody) {
         const clickedSlot = e.target;
         startSlot = clickedSlot;
         isDragging = true;
         isSelecting = !clickedSlot.classList.contains('selected');
 
         clickedSlot.classList.toggle('selected', isSelecting);
-        updateSessionSelectedSlots(tableBody);
+        updateFunction(tableBody);
     }
-});
+}
 
-tableBody.addEventListener('mousemove', (e) => {
-    if (isDragging && e.target.classList.contains('time-slot')) {
+function handleMouseMove(e, tableBody, updateFunction, slotClass) {
+    if (isDragging && e.target.classList.contains(slotClass) && e.currentTarget === tableBody) {
         const currentSlot = e.target;
         if (currentSlot !== startSlot) {
             currentSlot.classList.toggle('selected', isSelecting);
             currentSlot.classList.add('hover');
-            updateSessionSelectedSlots(tableBody);
+            updateFunction(tableBody);
         }
     }
-});
+}
 
-tableBody.addEventListener('mouseup', () => {
+function handleMouseUp(tableBody, updateFunction) {
     isDragging = false;
     startSlot = null;
 
-    const hoveredSlots = document.querySelectorAll('.time-slot.hover');
+    const hoveredSlots = tableBody.querySelectorAll('.time-slot.hover');
     hoveredSlots.forEach(slot => {
         slot.classList.remove('hover');
     });
 
-    updateSessionSelectedSlots(tableBody);
-});
+    updateFunction(tableBody);
+}
 
-// Event listener for updating session selected slots on click
-tableBody.addEventListener('click', (e) => {
-    if (e.target.classList.contains('time-slot') && !isDragging) {
-        updateSessionSelectedSlots(tableBody);
-    }
-});
-
-// Event listener for adding hover class on mouseover
-tableBody.addEventListener('mouseover', (e) => {
-    if (isDragging && e.target.classList.contains('time-slot')) {
-        e.target.classList.add('hover');
-    }
-});
-
-// Event listener for removing hover class on mouseout
-tableBody.addEventListener('mouseout', (e) => {
-    if (e.target.classList.contains('time-slot')) {
-        e.target.classList.remove('hover');
-    }
-});
+// Event handlers for "Your Schedule" table
+tableBody.addEventListener('mousedown', (e) => handleMouseDown(e, tableBody, updateSessionSelectedSlots, 'time-slot'));
+tableBody.addEventListener('mousemove', (e) => handleMouseMove(e, tableBody, updateSessionSelectedSlots, 'time-slot'));
+tableBody.addEventListener('mouseup', () => handleMouseUp(tableBody, updateSessionSelectedSlots));
 
 document.addEventListener('DOMContentLoaded', () => {
-    const yourScheduleTab = document.getElementById('yourScheduleTab');
-    const aggregatedAvailabilityTab = document.getElementById('aggregatedAvailabilityTab');
-    const yourScheduleSection = document.getElementById('yourSchedule');
-    const aggregatedAvailabilitySection = document.getElementById('aggregatedAvailability');
-    const formHeader = document.getElementById('availabilityFormHeader');
-    const formDivider = document.getElementById('availabilityFormDivider');
 
     yourScheduleTab.addEventListener('click', () => {
         yourScheduleTab.classList.add('tab-active');
@@ -113,6 +102,14 @@ document.addEventListener('DOMContentLoaded', () => {
         aggregatedAvailabilitySection.classList.add('hidden');
         formHeader.classList.remove('hidden');
         formDivider.classList.remove('hidden');
+
+        // Retrieve the saved selection from sessionStorage
+        const savedSlots = sessionStorage.getItem('sessionSelectedSlots');
+        if (savedSlots) {
+            sessionSelectedSlots = JSON.parse(savedSlots);
+        }
+
+        reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDate.value));
     });
 
     aggregatedAvailabilityTab.addEventListener('click', async () => {
@@ -122,9 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         aggregatedAvailabilitySection.classList.remove('hidden');
         formHeader.classList.add('hidden');
         formDivider.classList.add('hidden');
-
-        // Clear sessionSelectedSlots
-        sessionStorage.removeItem('sessionSelectedSlots');
 
         await updateAggregatedTable();
     });
@@ -153,9 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tableHeader,
         resetButton,
         reapplySessionSelectedSlots,
-        updateSessionSelectedSlots,
+        'availability-schedule-time-slot',
+        'start-time',
+        'end-time',
+        'hover'
     );
 
     // Reapply session selected slots on page load
-    reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment());
+    reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment(startDate.value));
 });

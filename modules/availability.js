@@ -38,21 +38,20 @@ export function suggestMeetingTimes(data) {
 }
 
 export async function applyFetchedDataToTable(data, tableBody, tableHeader) {
-    const sessionSelectedSlots = [];
+    const databaseSlots = [];
 
     Object.values(data).forEach(user => {
         user.selectedSlots.forEach(slot => {
-            sessionSelectedSlots.push(slot);
+            databaseSlots.push(slot);
         });
     });
-    console.log(sessionSelectedSlots);
-    reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, moment());
+    reapplySessionSelectedSlots(tableBody, tableHeader, databaseSlots, moment(startDate.value), 'aggregated-availability-time-slot');
 }
 
 export const updateAggregatedTable = async () => {
     const data = await fetchDataFromFirebase();
     if (data) {
-        if (startDate && endDate && startTimeSelect && endTimeSelect && timeFormat && granularity) {
+        if (startDate && endDate && startTimeSelect && endTimeSelect && timeFormatSelect && granularitySelect) {
             generateTimeSlots(
                 aggTableBody,
                 aggTableHeader,
@@ -60,10 +59,15 @@ export const updateAggregatedTable = async () => {
                 endDate.value,
                 startTimeSelect,
                 endTimeSelect,
-                timeFormat.value,
-                granularity.value,
+                timeFormatSelect.value,
+                granularitySelect.value,
                 [],
-                () => { });
+                reapplySessionSelectedSlots,
+                'aggregated-availability-time-slot',
+                'start-time',
+                'end-time',
+                'hover'
+            );
             applyFetchedDataToTable(data, aggTableBody, aggTableHeader);
         } else {
             console.error('One or more elements are not found');
@@ -72,4 +76,3 @@ export const updateAggregatedTable = async () => {
         console.error('No data found');
     }
 };
-

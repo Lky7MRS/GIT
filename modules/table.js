@@ -1,6 +1,21 @@
 import moment from 'moment';
 
-export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, startTimeSelect, endTimeSelect, timeFormat, granularity, sessionSelectedSlots, reapplySessionSelectedSlots) {
+export function generateTimeSlots(
+    tableBody,
+    tableHeader,
+    startDate,
+    endDate,
+    startTimeSelect,
+    endTimeSelect,
+    timeFormat,
+    granularity,
+    sessionSelectedSlots,
+    reapplySessionSelectedSlots,
+    slotClass = 'time-slot',
+    startTimeClass = 'start-time',
+    endTimeClass = 'end-time',
+    hoverClass = 'hover'
+) {
     const startTimeMoment = moment(startTimeSelect.value, timeFormat === '12h' ? 'h:mm A' : 'HH:mm');
     const endTimeMoment = moment(endTimeSelect.value, timeFormat === '12h' ? 'h:mm A' : 'HH:mm');
     let startHour = startTimeMoment.hour();
@@ -59,16 +74,16 @@ export function generateTimeSlots(tableBody, tableHeader, startDate, endDate, st
             const day = header.match(/\(([^)]+)\)/)[1];
             const year = start.clone().add(index, 'days').year();
             const fullDate = `${day}/${year}`;
-            return `<td class='time-slot' data-time='${time}' data-date='${fullDate}'></td>`;
+            return `<td class='${slotClass}' data-time='${time}' data-date='${fullDate}'></td>`;
         }).join('')}
         </tr>`;
     }).join('');
 
-    reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start);
+    reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start, slotClass);
 }
 
-export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start) {
-    sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || sessionSelectedSlots;
+export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelectedSlots, start, slotClass = 'time-slot') {
+    sessionSelectedSlots = sessionSelectedSlots || JSON.parse(sessionStorage.getItem('sessionSelectedSlots'));
 
     Array.from(tableBody.rows).forEach(row => {
         const time = row.cells[0].innerText;
@@ -90,11 +105,11 @@ export function reapplySessionSelectedSlots(tableBody, tableHeader, sessionSelec
             }
         });
     });
-    updateStartEndClasses(tableBody);
+    updateStartEndClasses(tableBody, slotClass);
 }
 
-export function updateSessionSelectedSlots(tableBody) {
-    const selectedSlots = Array.from(document.querySelectorAll('.time-slot.selected')).map(slot => {
+export function updateSessionSelectedSlots(tableBody, slotClass = 'time-slot') {
+    const selectedSlots = Array.from(document.querySelectorAll(`.${slotClass}.selected`)).map(slot => {
         const time = slot.dataset.time;
         const date = slot.dataset.date;
         const timestamp = moment(`${date} ${time}`, 'DD/MM/YYYY h:mm A').unix();
@@ -102,13 +117,13 @@ export function updateSessionSelectedSlots(tableBody) {
     });
 
     sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(selectedSlots));
-    updateStartEndClasses(tableBody);
+    updateStartEndClasses(tableBody, slotClass);
 }
 
-export function updateStartEndClasses(tableBody) {
+export function updateStartEndClasses(tableBody, slotClass = 'time-slot', startTimeClass = 'start-time', endTimeClass = 'end-time') {
     // Remove existing start-time and end-time classes
-    Array.from(tableBody.querySelectorAll('.time-slot')).forEach(cell => {
-        cell.classList.remove('start-time', 'end-time');
+    Array.from(tableBody.querySelectorAll(`.${slotClass}`)).forEach(cell => {
+        cell.classList.remove(startTimeClass, endTimeClass);
     });
 
     // Get the number of columns
@@ -125,20 +140,20 @@ export function updateStartEndClasses(tableBody) {
                 selectedCells.push(cell);
             } else if (selectedCells.length > 0) {
                 // Handle the end of a contiguous block
-                markContiguousBlock(selectedCells);
+                markContiguousBlock(selectedCells, startTimeClass, endTimeClass);
                 selectedCells = [];
             }
         });
 
         // Handle the last contiguous block if it exists
         if (selectedCells.length > 0) {
-            markContiguousBlock(selectedCells);
+            markContiguousBlock(selectedCells, startTimeClass, endTimeClass);
         }
     }
 }
 
 // Helper function to mark the start and end of a contiguous block
-function markContiguousBlock(cells) {
-    cells[0].classList.add('start-time');
-    cells[cells.length - 1].classList.add('end-time');
+function markContiguousBlock(cells, startTimeClass, endTimeClass) {
+    cells[0].classList.add(startTimeClass);
+    cells[cells.length - 1].classList.add(endTimeClass);
 }
