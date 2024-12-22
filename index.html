@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="sunset">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +10,7 @@
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.22/dist/full.min.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="output.css" />
 </head>
+
 <body class="bg-base-200 h-full flex-wrap">
   <main class="container mx-auto p-4">
     <div role="tablist" class="tabs tabs-boxed">
@@ -17,7 +19,7 @@
     </div>
     <div class="divider divider-vertical"></div>
     <div class="flex flex-col lg:flex-row gap-4">
-      <aside class="w-full lg:w-2/5 order-last">
+      <aside id="availabilityFormHeader" class="w-full lg:w-2/5 order-last">
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
             <h2 class="card-title text-xl font-bold">
@@ -84,16 +86,19 @@
                   <label for="note" class="label">
                     <span class="label-text"><i class="fas fa-sticky-note"></i> Note (optional):</span>
                   </label>
-                  <textarea id="note" name="note" class="textarea textarea-bordered" placeholder="Add a note" rows="3"></textarea>
+                  <textarea id="note" name="note" class="textarea textarea-bordered" placeholder="Add a note"
+                    rows="3"></textarea>
                 </div>
                 <div class="form-control col-span-2 grid grid-cols-5 gap-2 mt-6">
                   <button type="submit" class="btn btn-primary col-span-3 bg-blue-500 hover:bg-blue-100">
                     <i class="fas fa-save"></i> Submit
                   </button>
-                  <button type="button" id="exportCSVButton" class="btn btn-secondary col-span-1 bg-accent hover:bg-blue-100">
+                  <button type="button" id="exportCSVButton"
+                    class="btn btn-secondary col-span-1 bg-accent hover:bg-blue-100">
                     <i class="fas fa-file-csv"></i>
                   </button>
-                  <button type="button" id="resetButton" class="btn btn-secondary col-span-1 bg-error hover:bg-blue-100">
+                  <button type="button" id="resetButton"
+                    class="btn btn-secondary col-span-1 bg-error hover:bg-blue-100">
                     <i class="fas fa-undo"></i>
                   </button>
                 </div>
@@ -102,7 +107,7 @@
           </div>
         </div>
       </aside>
-      <div class="divider divider-horizontal order-2"></div>
+      <div id="availabilityFormDivider" class="divider divider-horizontal order-2"></div>
       <section id="yourSchedule" class="w-full lg:w-4/5">
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
@@ -125,25 +130,26 @@
       </section>
       <section id="aggregatedAvailability" class="w-full lg:w-4/5 hidden">
         <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h2 class="card-title text-xl font-bold">
-                    <i class="fas fa-users"></i>
-                    Aggregated Availability
-                </h2>
-                <div class="overflow-x-auto">
-                    <table id="aggregatedAvailabilityTable" class="table w-full">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-clock"></i> Time</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+          <div class="card-body">
+            <h2 class="card-title text-xl font-bold">
+              <i class="fas fa-users"></i>
+              Aggregated Availability
+            </h2>
+            <div class="overflow-x-auto">
+              <table id="aggregatedAvailabilityTable" class="table w-full">
+                <thead>
+                  <tr>
+                    <th><i class="fas fa-clock"></i> Time</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
             </div>
+          </div>
         </div>
-    </section>
+      </section>
     </div>
   </main>
 </body>
+
 </html>

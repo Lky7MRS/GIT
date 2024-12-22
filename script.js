@@ -103,12 +103,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const aggregatedAvailabilityTab = document.getElementById('aggregatedAvailabilityTab');
     const yourScheduleSection = document.getElementById('yourSchedule');
     const aggregatedAvailabilitySection = document.getElementById('aggregatedAvailability');
+    const formHeader = document.getElementById('availabilityFormHeader');
+    const formDivider = document.getElementById('availabilityFormDivider');
 
     yourScheduleTab.addEventListener('click', () => {
         yourScheduleTab.classList.add('tab-active');
         aggregatedAvailabilityTab.classList.remove('tab-active');
         yourScheduleSection.classList.remove('hidden');
         aggregatedAvailabilitySection.classList.add('hidden');
+        formHeader.classList.remove('hidden');
+        formDivider.classList.remove('hidden');
     });
 
     aggregatedAvailabilityTab.addEventListener('click', async () => {
@@ -116,6 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
         aggregatedAvailabilityTab.classList.add('tab-active');
         yourScheduleSection.classList.add('hidden');
         aggregatedAvailabilitySection.classList.remove('hidden');
+        formHeader.classList.add('hidden');
+        formDivider.classList.add('hidden');
 
         // Clear sessionSelectedSlots
         sessionStorage.removeItem('sessionSelectedSlots');
