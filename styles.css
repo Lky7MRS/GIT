@@ -9,26 +9,31 @@ table {
   -webkit-user-select: none;
 }
 
-.time-slot.selected {
+/* General Time Slot Styles */
+.time-slot.selected,
+.aggregated-availability-time-slot.selected {
   background-color: #0d47a1;
   color: white;
 }
 
-.time-slot.start-time {
+.time-slot.start-time,
+.aggregated-availability-time-slot.start-time {
   border-top: 5px solid #00aa30;
 }
 
-.time-slot.end-time {
+.time-slot.end-time,
+.aggregated-availability-time-slot.end-time {
   border-bottom: 5px solid #dc3545;
 }
 
-.time-slot.hover {
+.time-slot.hover,
+.aggregated-availability-time-slot.hover {
   background-color: #3a3a3a;
 }
 
 /* Transitions */
 table td,
-.time-slot
+.time-slot,
 .aggregated-availability-time-slot {
   transition: background-color 0.2s ease, transform 0.3s ease;
 }
@@ -50,6 +55,7 @@ table td,
   text-align: center;
   padding: 0.75rem;
   color: #eee;
+  position: relative; /* Ensure tooltips are positioned relative to the cell */
 }
 
 .table tbody td:hover,
@@ -64,22 +70,4 @@ td:hover {
 
 .hidden {
   display: none;
-}
-
-/* Aggregated Availability Time Slot Styles */
-.aggregated-availability-time-slot.selected {
-  background-color: #0d47a1;
-  color: white;
-}
-
-.aggregated-availability-time-slot.start-time {
-  border-top: 5px solid #00aa30;
-}
-
-.aggregated-availability-time-slot.end-time {
-  border-bottom: 5px solid #dc3545;
-}
-
-.aggregated-availability-time-slot.hover {
-  background-color: #3a3a3a;
 }

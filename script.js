@@ -30,7 +30,6 @@ const aggregatedAvailabilitySection = document.getElementById('aggregatedAvailab
 const formHeader = document.getElementById('availabilityFormHeader');
 const formDivider = document.getElementById('availabilityFormDivider');
 
-
 // Default settings
 export let sessionSelectedSlots = JSON.parse(sessionStorage.getItem('sessionSelectedSlots')) || [];
 export let timeFormat = '24h';
@@ -47,7 +46,6 @@ export function updateGranularity(newGranularity) {
 
 // ---------- Event Listeners ----------
 
-// Handle mouse interactions for slot selection
 // Handle mouse interactions for slot selection
 let isDragging = false;
 let startSlot = null;
@@ -93,16 +91,20 @@ tableBody.addEventListener('mousedown', (e) => handleMouseDown(e, tableBody, upd
 tableBody.addEventListener('mousemove', (e) => handleMouseMove(e, tableBody, updateSessionSelectedSlots, 'time-slot'));
 tableBody.addEventListener('mouseup', () => handleMouseUp(tableBody, updateSessionSelectedSlots));
 
-document.addEventListener('DOMContentLoaded', () => {
+// Event handlers for "Aggregated Availability" table
+aggregatedAvailabilityTableBody.addEventListener('mousedown', (e) => handleMouseDown(e, aggregatedAvailabilityTableBody, () => { }, 'aggregated-availability-time-slot'));
+aggregatedAvailabilityTableBody.addEventListener('mousemove', (e) => handleMouseMove(e, aggregatedAvailabilityTableBody, () => { }, 'aggregated-availability-time-slot'));
+aggregatedAvailabilityTableBody.addEventListener('mouseup', () => handleMouseUp(aggregatedAvailabilityTableBody, () => { }));
 
+document.addEventListener('DOMContentLoaded', () => {
     yourScheduleTab.addEventListener('click', () => {
         yourScheduleTab.classList.add('tab-active');
         aggregatedAvailabilityTab.classList.remove('tab-active');
         yourScheduleSection.classList.remove('hidden');
         aggregatedAvailabilitySection.classList.add('hidden');
-        formHeader.classList.remove('hidden');
-        formDivider.classList.remove('hidden');
-
+        //formHeader.classList.remove('hidden');
+        //formDivider.classList.remove('hidden');
+        sessionSelectedSlots.length = 0;
         // Retrieve the saved selection from sessionStorage
         const savedSlots = sessionStorage.getItem('sessionSelectedSlots');
         if (savedSlots) {
@@ -117,8 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
         aggregatedAvailabilityTab.classList.add('tab-active');
         yourScheduleSection.classList.add('hidden');
         aggregatedAvailabilitySection.classList.remove('hidden');
-        formHeader.classList.add('hidden');
-        formDivider.classList.add('hidden');
+        //formHeader.classList.add('hidden');
+        //formDivider.classList.add('hidden');
+        sessionSelectedSlots.length = 0;
+        // Save the current selection to sessionStorage
+        //sessionStorage.setItem('sessionSelectedSlots', JSON.stringify(sessionSelectedSlots));
 
         await updateAggregatedTable();
     });
